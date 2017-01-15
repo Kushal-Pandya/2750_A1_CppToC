@@ -5,6 +5,7 @@ struct myStruct {
 
 int main(int argc, char* argv[]) {
 	int ch;
+
 	printf("Hello World!!\n");
 	return 0;
 }

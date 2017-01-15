@@ -8,4 +8,4 @@ a1.o: a1.c
 	$(CC) $(CFLAGS) -c a1.c
 
 clean: 
-	rm -f *.o a1
+	rm -f *.o a1 assets.txt

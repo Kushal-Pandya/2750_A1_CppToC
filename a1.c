@@ -10,11 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TOKEN_LIMIT 100
+#define TOKEN_LIMIT 25
 
 
 int parseFile(FILE * file);
-char ** createArray(int tokens);
+int createArray(int tokens);
 int readArray(char ** array);
 
 
@@ -34,7 +34,7 @@ int main(int argc, char * argv[]) {
 	FILE *file = fopen(fileName, "r");
 	tokens = parseFile(file);
 
-	char ** array = createArray(tokens);
+	createArray(tokens);
 	// readArray(array);
 	fclose(file);
 
@@ -72,7 +72,6 @@ int parseFile(FILE * file) {
 		if (startQuote == 1) {
 			lastCharSpace = 0;
 			lastCharNewLine = 0;
-			printf("%c", c);
 			fprintf(assetsFile, "%c", c);
 
 			if (c == '\\') escapeChar = 1;
@@ -82,7 +81,6 @@ int parseFile(FILE * file) {
 		else if (newComment == 1 || newMultiLineComment == 1) {
 			lastCharSpace = 0;
 			lastCharNewLine = 0;
-			printf("%c", c);
 			fprintf(assetsFile, "%c", c);
 
 			if (c == '\n') newComment = 0;
@@ -98,7 +96,6 @@ int parseFile(FILE * file) {
 				lastCharSpace = 0;
 				lastCharNewLine = 0;
 				possComment = 0;
-				printf("%c", c);
 				fprintf(assetsFile, "%c", c);
 				break;
 			case '#':
@@ -107,12 +104,10 @@ int parseFile(FILE * file) {
 				lastCharSpace = 0;
 				includeCounter++;
 				possComment = 0;
-				printf("%c", c);
 				fprintf(assetsFile, "%c", c);
 				break;
 			case '\n':
 				if (lastCharNewLine == 1) {
-					printf("\n");
 					fprintf(assetsFile, "\n");
 				}
 				lastCharNewLine = 1;
@@ -121,7 +116,6 @@ int parseFile(FILE * file) {
 			case '\t':
 			case '\r':
 				if (dontPrintSpace == 0 && lastCharSpace == 0) {
-					printf("\n");
 					fprintf(assetsFile, "\n");
 					lastCharSpace = 1;
 					tokenCounter++;
@@ -135,7 +129,6 @@ int parseFile(FILE * file) {
 			case ')':
 			case '{':
 			case '}':
-				printf("%c\n", c);
 				fprintf(assetsFile, "%c\n", c);
 				lastCharSpace = 1;
 				lastCharNewLine = 0;
@@ -143,19 +136,16 @@ int parseFile(FILE * file) {
 				tokenCounter++;
 				break;
 			case '/':
-				printf("%c", c);
 				fprintf(assetsFile, "%c", c);
 				if (possComment == 1) newComment = 1; // if possible comment, it is one now
 				else possComment = 1; // else it may just be a possible comment
 				break;
 			case '*':
-				printf("%c", c);
 				fprintf(assetsFile, "%c", c);
 				if (possComment == 1) newMultiLineComment = 1; // if there is a possible comment, there is one now
 				else possComment = 1;
 				break;
 			default:
-				printf("%c", c);
 				fprintf(assetsFile, "%c", c);
 				lastCharSpace = 0;
 				lastCharNewLine = 0;
@@ -174,7 +164,9 @@ int parseFile(FILE * file) {
 
 // Files below should be in list interface file
 
-char ** createArray(int tokens) {
+int createArray(int tokens) {
+
+	printf("test");
 
 	int i;
 	char token[TOKEN_LIMIT];
@@ -184,15 +176,17 @@ char ** createArray(int tokens) {
 	tokenArray = malloc(sizeof(char*)*tokens);
 
 	while(fgets(token, TOKEN_LIMIT, assetsFile) != NULL) {
-		if (token[0] != '#')  {
-			tokenArray[i] = malloc(sizeof(char)*(strlen(token)));
-			strcpy(tokenArray[i], token);
-			i++;
-		}
+		tokenArray[i] = malloc(sizeof(char)*(strlen(token)));
+		strcpy(tokenArray[i], token);
+		i++;
 	}
 
+	for (int i=0; i<tokens; i++) 
+		printf("%s\n", tokenArray[i]);
+
 	fclose(assetsFile);
-	return tokenArray;
+	return 0;
+	// return tokenArray;
 }
 
 int readArray(char ** array) {

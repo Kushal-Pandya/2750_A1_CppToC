@@ -35,7 +35,7 @@ int main(int argc, char * argv[]) {
 	tokens = parseFile(file);
 
 	char ** array = createArray(tokens);
-	// readArray(array);
+	readArray(array);
 	fclose(file);
 
 	return 0;

@@ -34,8 +34,6 @@ int main(int argc, char * argv[]) {
 	FILE *file = fopen(fileName, "r");
 	tokens = parseFile(file);
 
-	char ** array = createArray(tokens);
-	readArray(array);
 	createArray(tokens);
 	// readArray(array);
 	fclose(file);

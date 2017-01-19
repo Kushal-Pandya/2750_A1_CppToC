@@ -10,13 +10,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TOKEN_LIMIT 25
+#define TOKEN_LIMIT 50
 
 
 int parseFile(FILE * file);
-int createArray(int tokens);
-int readArray(char ** array);
-
+char ** createArray(int tokens);
+int readArray(char ** array, int size);
+int freeArray(char ** array, int size);
 
 
 int main(int argc, char * argv[]) {
@@ -34,8 +34,11 @@ int main(int argc, char * argv[]) {
 	FILE *file = fopen(fileName, "r");
 	tokens = parseFile(file);
 
-	createArray(tokens);
-	// readArray(array);
+	char ** array = createArray(tokens);
+	readArray(array, tokens);
+
+	freeArray(array, tokens);
+
 	fclose(file);
 
 	return 0;
@@ -64,7 +67,6 @@ int parseFile(FILE * file) {
 	int newMultiLineComment = 0;
 
 	// Counters
-	int includeCounter = 0;
 	int tokenCounter = 0;
 
 	while ((c = fgetc(file)) != EOF) {
@@ -73,6 +75,8 @@ int parseFile(FILE * file) {
 			lastCharSpace = 0;
 			lastCharNewLine = 0;
 			fprintf(assetsFile, "%c", c);
+
+			if (c == '\n') tokenCounter++;
 
 			if (c == '\\') escapeChar = 1;
 			else if (escapeChar == 1 && c == '"') escapeChar = 0;
@@ -83,7 +87,12 @@ int parseFile(FILE * file) {
 			lastCharNewLine = 0;
 			fprintf(assetsFile, "%c", c);
 
-			if (c == '\n') newComment = 0;
+			if (c == '\n') tokenCounter++;
+
+			if (c == '\n') { 
+				newComment = 0;
+				tokenCounter++;
+			}
 			else if (c == '*' && newMultiLineComment == 1) endComment = 1;
 			else if (c == '/' && endComment == 1 && newMultiLineComment == 1) {
 				newMultiLineComment = 0;	
@@ -102,13 +111,13 @@ int parseFile(FILE * file) {
 				dontPrintSpace = 1;
 				lastCharNewLine = 0;
 				lastCharSpace = 0;
-				includeCounter++;
 				possComment = 0;
 				fprintf(assetsFile, "%c", c);
 				break;
 			case '\n':
 				if (lastCharNewLine == 1) {
 					fprintf(assetsFile, "\n");
+					tokenCounter++;
 				}
 				lastCharNewLine = 1;
 				newComment = 0; // a single line comment would end once new line is found
@@ -118,10 +127,10 @@ int parseFile(FILE * file) {
 				if (dontPrintSpace == 0 && lastCharSpace == 0) {
 					fprintf(assetsFile, "\n");
 					lastCharSpace = 1;
-					tokenCounter++;
+					tokenCounter++;   
 				}
 				else dontPrintSpace = 0;
-				possComment = 0;			
+				possComment = 0;	
 				break;
 			case ',':
 			case ';':
@@ -156,7 +165,7 @@ int parseFile(FILE * file) {
 
 	fclose(assetsFile);
 
-	tokens = tokenCounter - includeCounter;
+	tokens = tokenCounter;
 	printf("\n%d Tokens\n", tokens);
 	return tokens;
 }
@@ -164,36 +173,40 @@ int parseFile(FILE * file) {
 
 // Files below should be in list interface file
 
-int createArray(int tokens) {
-
-	printf("test");
+char ** createArray(int tokens) {
 
 	int i;
-	char token[TOKEN_LIMIT];
+	char *token = calloc(TOKEN_LIMIT, sizeof(char));
 	FILE * assetsFile = fopen("assets.txt", "r");
 	
 	char **tokenArray;
 	tokenArray = malloc(sizeof(char*)*tokens);
 
 	while(fgets(token, TOKEN_LIMIT, assetsFile) != NULL) {
-		tokenArray[i] = malloc(sizeof(char)*(strlen(token)));
+		tokenArray[i] = malloc(sizeof(char)*(strlen(token)+1));
 		strcpy(tokenArray[i], token);
 		i++;
 	}
 
-	for (int i=0; i<tokens; i++) 
-		printf("%s\n", tokenArray[i]);
-
 	fclose(assetsFile);
-	return 0;
-	// return tokenArray;
+	return tokenArray;
 }
 
-int readArray(char ** array) {
 
-	for (int i=0; i<35; i++) {
+int readArray(char ** array, int size) {
+
+	for (int i=0; i<size; i++) 
 		printf("%s", array[i]);
-	}
 
+	return 0;
+}
+
+
+int freeArray(char ** array, int size) {
+
+	for (int i=0; i<size; i++) 
+		free(array[i]);
+
+	free(array);
 	return 0;
 }

@@ -2,26 +2,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct myStruct {
-	int a;};
+
+char ** createArray() {
+	char ** array;
+	array = malloc(sizeof(char*)*10);
+
+	for (int i; i<20; i++) {
+		array[i] = malloc(sizeof(char)*5);
+		strcpy(array[i], "hi");
+	}
+
+	return array;
+}
+
 
 int main(int argc, char* argv[]) {
 	int ch;
 
-	char string[3] = "a\"n";
+	char ** array = createArray();
 
-	for (int i; i<strlen(string); i++) {
-		switch(string[i]) {
-			case 'a':
-				printf("%c\n", string[i]);
-				break;
-			case 92:
-				printf("%c FOUND\n", string[i]);
-		}
-
-		printf("%c\n", string[i]);
+	for (int i=0; i<35; i++) {
+		printf("%s", array[i]);
 	}
 
-	printf("Hello World!!\n");
 	return 0;
 }

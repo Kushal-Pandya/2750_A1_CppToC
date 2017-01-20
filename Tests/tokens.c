@@ -1,29 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-
-char ** createArray() {
-	char ** array;
-	array = malloc(sizeof(char*)*10);
-
-	for (int i; i<20; i++) {
-		array[i] = malloc(sizeof(char)*5);
-		strcpy(array[i], "hi");
-	}
-
-	return array;
-}
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
 
 
 int main(int argc, char* argv[]) {
-	int ch;
+	int ch = 5;
 
-	char ** array = createArray();
-
-	for (int i=0; i<35; i++) {
-		printf("%s", array[i]);
-	}
+	printf("test %d\n", ch);
 
 	return 0;
 }

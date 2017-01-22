@@ -1,57 +1,51 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-typedef struct Token {
-        char* value;
-        int numSpaces;
-        struct Token* next;
-} Token;
+#include "a1.h"
 
 
-Token* createTokens(char* token, int spaces) {
+List* createList() {
 
-        Token* newTokens = malloc(sizeof(Token));
-        if (NULL != newTokens){
-                newTokens->value = token;
-                newTokens->numSpaces = spaces;
-                newTokens->next = NULL;
+        List* newList = malloc(sizeof(List));
+        if (newList != NULL) {
+                newList->value = "";
+                newList->next = NULL;
         }
-        return newTokens;
+        return newList;
 }
 
 
-Token* addToken(Token* tokensList, char* token, int spaces) {
+List* addValue(List* list, char* newValue) {
 
-        Token* newTokens = createTokens(token, spaces);
-        if (NULL != newTokens) {
-                newTokens->next = tokensList;
+        List* newList = createList(newValue);
+        if (newList != NULL) {
+                newList->next = list;
         }
-        return newTokens;
+        return newList;
 }
 
 
-void removeTokens(Token* tokensList) {
+void destroyList(List* list) {
 
-        if (NULL != tokensList->next) {
-                removeTokens(tokensList->next);
+        if (list->next != NULL) {
+                destroyList(list->next);
         }
-        free(tokensList);
+        free(list);
 }
 
 
 
 // int main(int argc, char** argv) {
 
-//         Token* tokens = createTokens("Hello", 3);
-//         tokens = addToken(tokens, "World", 2);
-//         tokens = addToken(tokens, "Licka", 4);
+//         List* tokens = createList("Hello");
+//         tokens = addValue(tokens, "World");
+//         tokens = addValue(tokens, "Licka");
 
-//         Token* iter;
+//         List* iter;
 //         for (iter=tokens; NULL!=iter; iter=iter->next) {
-//                 printf("%s %d\n", iter->value, iter->numSpaces);
+//                 printf("%s\n", iter->value);
 //         }
 
-//         removeTokens(tokens);
+//         destroyList(tokens);
 //         return 0;
 // }

@@ -11,13 +11,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "a1.h"
+
 #define TOKEN_LIMIT 100
-
-
-int parseFile(FILE * file);
-char ** createArray(int tokens);
-int readArray(char ** array, int size);
-int freeArray(char ** array, int size);
 
 
 int main(int argc, char * argv[]) {
@@ -44,7 +40,7 @@ int main(int argc, char * argv[]) {
 	char ** array = createArray(tokens);
 	readArray(array, tokens);
 
-	freeArray(array, tokens);
+	// freeArray(array, tokens);
 
 	fclose(file);
 
@@ -197,8 +193,7 @@ char ** createArray(int tokens) {
 	char *token = calloc(TOKEN_LIMIT, sizeof(char));
 	FILE * assetsFile = fopen("assets.txt", "r");
 	
-	char **tokenArray;
-	tokenArray = malloc(sizeof(char*)*tokens);
+	char **tokenArray = malloc(sizeof(char*)*tokens);
 
 	while(fgets(token, TOKEN_LIMIT, assetsFile) != NULL) {
 		tokenArray[i] = malloc(sizeof(char)*(strlen(token)+1));
@@ -213,12 +208,122 @@ char ** createArray(int tokens) {
 
 int readArray(char ** array, int size) {
 
-	for (int i=0; i<size; i++) 
-		printf("%s", array[i]);
+	int isClass = 0; // to get the class name
+	int codeBlocks = 0; // how many nested codeBlocks
+	int startQuote = 0;	// if quote existing withing current token
+
+	int possFunc = 0; // Enabled when a class starts
+	int confirmFunc = 0; // Enabled when function starts
+
+	int j = 0;
+	char * className = calloc(10, sizeof(char));
+	char * temp = calloc(20, sizeof(char));
+	char * temp2 = calloc(20, sizeof(char));
+	char ** nameArray = malloc(sizeof(char*)*size);
+
+	// List * classNamesList = createList();
+
+
+	for (int i=0; i<size; i++) {
+
+		if (strcmp(array[i], "class\n") == 0) {
+			strcpy(array[i], "struct\n");
+			isClass = 1;
+		}
+		else if (isClass) {
+			strncpy(className, array[i], strlen(array[i])-1);
+			// classNamesList = addValue(classNamesList, className);
+			isClass = 0;	
+		}
+
+		if (strcmp(array[i], "{\n") == 0) {
+			codeBlocks++; 
+			isClass = 0;	
+		} 
+		else if (strcmp(array[i], "}\n") == 0) codeBlocks--; 
+		else if (strstr(array[i], "(\n") != NULL && codeBlocks == 1) {
+
+			if (strchr(array[i], '.') != NULL) {
+				char * varName = strtok(array[i], ".");
+				char * token = strtok(NULL, ".");
+
+				strcpy(temp2, token);
+				strcat(varName, ".");
+				strcpy(temp, className);
+				strcat(temp, temp2);
+				strcat(varName, temp);
+				strcpy(array[i], varName);
+			}
+			else{
+				strcpy(temp, className);
+				strcat(temp, array[i]);
+				strcpy(array[i], temp);
+			}
+		}
+
+		printf("%d %d %s %s", codeBlocks, isClass, className, array[i]);
+	}
+
+	// Testing printing
+	// for (int i=0; i<size; i++)
+	// 	printf("%s", array[i]);
+
+	for (int i=0; i<50; i++) printf("-");
 
 	return 0;
 }
 
+/*
+	Returns:
+	0 if only newline is found
+
+	2 if class found
+	3 if class name found
+	4 if typefound
+	5 if var name found
+	6 if func found "("
+	7 if brace/new code block found "{"
+	8 if ending block found "}"
+	9 if semicolon found ";"
+	10 if something and punc is found "a;" MAYBE
+*/
+int findKeyWords(char * token, int startQuote) {
+
+	if (startQuote == 0) {
+		if (strcmp(token, "class\n") == 0) {
+			return 2;
+		}
+		else if (strcmp(token, "{\n") == 0) {
+			return 7;
+		}
+		else if (strchr(token, ';')) {
+			return 9;
+		}
+		else if (strchr(token, '(')) {
+			return 6;
+		}
+	}
+
+	return 0;
+}
+
+// check to see if type is valid
+// int compareTypes(char * token) {
+
+// 	switch(token) {
+// 		case "int":
+// 		case "void":
+// 		case "float":
+// 		case "double":
+// 		case "char":
+// 			return 1;
+// 			break;
+// 		default:
+// 			return 0;
+// 			break;
+// 	}
+// 	return 0;
+// }
 
 int freeArray(char ** array, int size) {
 

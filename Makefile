@@ -1,13 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -ansi -std=c99 -g
 
-all: a1.o list.o
+program: a1.o list.o
 	$(CC) $(CFLAGS) a1.o list.o -o a1
 
-a1.o: a1.c
+a1.o: a1.c a1.h
 	$(CC) $(CFLAGS) -c a1.c
 
-list.o: list.c
+list.o: list.c a1.h
 	$(CC) $(CFLAGS) -c list.c
 
 clean: 

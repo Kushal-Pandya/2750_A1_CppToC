@@ -4,11 +4,11 @@
 #include "a1.h"
 
 
-List* createList() {
+List* createList(char * newValue) {
 
         List* newList = malloc(sizeof(List));
         if (newList != NULL) {
-                newList->value = "";
+                newList->value = newValue;
                 newList->next = NULL;
         }
         return newList;
@@ -37,12 +37,12 @@ void destroyList(List* list) {
 
 // int main(int argc, char** argv) {
 
-//         List* tokens = createList("Hello");
+//         List* tokens = createList("");
 //         tokens = addValue(tokens, "World");
 //         tokens = addValue(tokens, "Licka");
 
 //         List* iter;
-//         for (iter=tokens; NULL!=iter; iter=iter->next) {
+//         for (iter=tokens; iter!=NULL; iter=iter->next) {
 //                 printf("%s\n", iter->value);
 //         }
 

@@ -3,11 +3,13 @@
 
 // This is a comment
 
+float num = 1.5;
+
 class A {
 	int a;
-	int add(int b, int c) {
+	int add() {
 		/*This is also a comment*/
-		return (b+c);
+		return (1+1);
 	}
 	int subtract(int d, int e) {
 		return (d-e);
@@ -23,6 +25,8 @@ class B {
 
 int main() {
 	class A myAClass;
+	class B myBClass;
+
 	myAClass.a = 7;
 	myAClass.add(1, 1);
 

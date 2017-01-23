@@ -210,18 +210,13 @@ int readArray(char ** array, int size) {
 
 	int isClass = 0; // to get the class name
 	int codeBlocks = 0; // how many nested codeBlocks
-	int startQuote = 0;	// if quote existing withing current token
 
 	int possFunc = 0; // Enabled when a class starts
 	int confirmFunc = 0; // Enabled when function starts
 
-	int j = 0;
 	char * className = calloc(10, sizeof(char));
 	char * temp = calloc(20, sizeof(char));
 	char * temp2 = calloc(20, sizeof(char));
-	char ** nameArray = malloc(sizeof(char*)*size);
-
-	// List * classNamesList = createList();
 
 
 	for (int i=0; i<size; i++) {
@@ -231,8 +226,8 @@ int readArray(char ** array, int size) {
 			isClass = 1;
 		}
 		else if (isClass) {
+			// store class name here
 			strncpy(className, array[i], strlen(array[i])-1);
-			// classNamesList = addValue(classNamesList, className);
 			isClass = 0;	
 		}
 
@@ -254,7 +249,7 @@ int readArray(char ** array, int size) {
 				strcat(varName, temp);
 				strcpy(array[i], varName);
 			}
-			else{
+			else {
 				strcpy(temp, className);
 				strcat(temp, array[i]);
 				strcpy(array[i], temp);
@@ -268,7 +263,6 @@ int readArray(char ** array, int size) {
 	// for (int i=0; i<size; i++)
 	// 	printf("%s", array[i]);
 
-	for (int i=0; i<50; i++) printf("-");
 
 	return 0;
 }

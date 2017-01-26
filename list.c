@@ -34,18 +34,19 @@ void destroyList(List* list) {
 }
 
 
+/*
+int main(int argc, char** argv) {
 
-// int main(int argc, char** argv) {
+        List* tokens = createList("");
+        tokens = addValue(tokens, "World");
+        tokens = addValue(tokens, "Licka");
 
-//         List* tokens = createList("");
-//         tokens = addValue(tokens, "World");
-//         tokens = addValue(tokens, "Licka");
+        List* iter;
+        for (iter=tokens; iter!=NULL; iter=iter->next) {
+                printf("%s\n", iter->value);
+        }
 
-//         List* iter;
-//         for (iter=tokens; iter!=NULL; iter=iter->next) {
-//                 printf("%s\n", iter->value);
-//         }
-
-//         destroyList(tokens);
-//         return 0;
-// }
+        destroyList(tokens);
+        return 0;
+}
+*/

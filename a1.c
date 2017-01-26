@@ -24,11 +24,11 @@ int main(int argc, char * argv[]) {
 	if (argc != 2) {
 		printf("Not Enough Command Line arguments\n\n");
 		fileName = "infile.cpp";
-		// exit(0)
+		/* exit(0)*/
 	}
 	else fileName = argv[1];
 
-	// Check if file exists
+	/* Check if file exists */
 	if (access(fileName, F_OK) == -1) {
 		printf("File doesn't exist or error opening\n");
 		exit(0);
@@ -40,7 +40,7 @@ int main(int argc, char * argv[]) {
 	char ** array = createArray(tokens);
 	readArray(array, tokens);
 
-	// freeArray(array, tokens);
+	freeArray(array, tokens); 
 
 	fclose(file);
 
@@ -54,23 +54,23 @@ int parseFile(FILE * file) {
 	int c;
 	int tokens;
 
-	// Helper file to store tokens for easier reading
+	/* Helper file to store tokens for easier reading */
 	FILE * assetsFile = fopen("assets.txt", "w");
 
-	// Booleans
-	int lastCharSpace = 0; // Used to check if last char was a white space
-	int lastCharNewLine = 0; // print newline if last char was newline
-	int startQuote = 0; // Used to indicate start of quote
+	/* Booleans*/
+	int lastCharSpace = 0; /* Used to check if last char was a white space*/
+	int lastCharNewLine = 0; /* print newline if last char was newline*/
+	int startQuote = 0; /* Used to indicate start of */
 
-	int possEscapeChar = 0; //Possibility of escape character in string
-	int escapeChar = 0; // Indicates if last char was escape character
+	int possEscapeChar = 0; /*Possibility of escape character in string*/
+	int escapeChar = 0; /* Indicates if last char was escape character*/
 
-	int possComment = 0; // Possible start of a comment
-	int endComment = 0; // possible end of comment
-	int newComment = 0; // Used to indicate if start of comment
+	int possComment = 0; /* Possible start of a comment*/
+	int endComment = 0; /* possible end of comment*/
+	int newComment = 0; /* Used to indicate if start of comment*/
 	int newMultiLineComment = 0;
 
-	// Counters
+	/* Counters*/
 	int tokenCounter = 0;
 
 	while ((c = fgetc(file)) != EOF) {
@@ -80,7 +80,7 @@ int parseFile(FILE * file) {
 			lastCharNewLine = 0;
 			fprintf(assetsFile, "%c", c);
 
-			if (c == '\n') {        // Need to take into account that strings may be more than 1 line?
+			if (c == '\n') {        /* Need to take into account that strings may be more than 1 line?*/
 				lastCharNewLine = 1;
 				tokenCounter++;
 			} 
@@ -131,7 +131,7 @@ int parseFile(FILE * file) {
 					tokenCounter++;
 				}
 				lastCharNewLine = 1;
-				newComment = 0; // a single line comment would end once new line is found
+				newComment = 0; /* a single line comment would end once new line is found*/
 			case ' ':
 			case '\t':
 			case '\r':
@@ -156,14 +156,14 @@ int parseFile(FILE * file) {
 				break;
 			case '/':
 				fprintf(assetsFile, "%c", c);
-				if (possComment == 1) newComment = 1; // if possible comment, it is one now
-				else possComment = 1; // else it may just be a possible comment
+				if (possComment == 1) newComment = 1; /* if possible comment, it is one now*/
+				else possComment = 1; /* else it may just be a possible comment*/
 				lastCharSpace = 0;
 				lastCharNewLine = 0;
 				break;
 			case '*':
 				fprintf(assetsFile, "%c", c);
-				if (possComment == 1) newMultiLineComment = 1; // if there is a possible comment, there is one now
+				if (possComment == 1) newMultiLineComment = 1; /* if there is a possible comment, there is one now*/
 				else possComment = 1;
 				lastCharSpace = 0;
 				lastCharNewLine = 0;
@@ -185,7 +185,7 @@ int parseFile(FILE * file) {
 }
 
 
-// Files below should be in list interface file
+/* Files below should be in list interface file*/
 
 char ** createArray(int tokens) {
 
@@ -201,6 +201,7 @@ char ** createArray(int tokens) {
 		i++;
 	}
 
+	free(token);
 	fclose(assetsFile);
 	return tokenArray;
 }
@@ -208,25 +209,25 @@ char ** createArray(int tokens) {
 
 int readArray(char ** array, int size) {
 
-	int isClass = 0; // to get the class name
-	int codeBlocks = 0; // how many nested codeBlocks
+	int isClass = 0; /* to get the class name*/
+	int codeBlocks = 0; /* how many nested codeBlocks*/
 
-	int possFunc = 0; // Enabled when a class starts
-	int confirmFunc = 0; // Enabled when function starts
+	int possFunc = 0; /* Enabled when a class starts*/
+	int confirmFunc = 0; /* Enabled when function starts*/
 
 	char * className = calloc(10, sizeof(char));
 	char * temp = calloc(20, sizeof(char));
 	char * temp2 = calloc(20, sizeof(char));
 
-
-	for (int i=0; i<size; i++) {
+	int i;
+	for (i=0; i<size; i++) {
 
 		if (strcmp(array[i], "class\n") == 0) {
 			strcpy(array[i], "struct\n");
 			isClass = 1;
 		}
 		else if (isClass) {
-			// store class name here
+			/* store class name here*/
 			strncpy(className, array[i], strlen(array[i])-1);
 			isClass = 0;	
 		}
@@ -259,9 +260,9 @@ int readArray(char ** array, int size) {
 		printf("%d %d %s %s", codeBlocks, isClass, className, array[i]);
 	}
 
-	// Testing printing
-	// for (int i=0; i<size; i++)
-	// 	printf("%s", array[i]);
+	/* Testing printing
+	for (int i=0; i<size; i++)
+	printf("%s", array[i]); */
 
 
 	return 0;
@@ -301,27 +302,10 @@ int findKeyWords(char * token, int startQuote) {
 	return 0;
 }
 
-// check to see if type is valid
-// int compareTypes(char * token) {
-
-// 	switch(token) {
-// 		case "int":
-// 		case "void":
-// 		case "float":
-// 		case "double":
-// 		case "char":
-// 			return 1;
-// 			break;
-// 		default:
-// 			return 0;
-// 			break;
-// 	}
-// 	return 0;
-// }
-
 int freeArray(char ** array, int size) {
 
-	for (int i=0; i<size; i++) 
+	int i;
+	for (i=0; i<size; i++) 
 		free(array[i]);
 
 	free(array);

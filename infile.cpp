@@ -13,6 +13,8 @@ class A {
 	}
 	int subtract(int d, int e) {
 		int c;
+		float one= e;
+		e = 5;
 		return (d-e);
 	}
 };

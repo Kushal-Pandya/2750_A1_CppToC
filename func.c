@@ -48,9 +48,10 @@ void destroyFuncList(struct Func * funcList) {
 /*
 Recursively stores the function parameters.
 */
-struct Func * storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex) {
+int storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex) {
 
     int i = arrayIndex;
+    int newIndex;
     char * name = malloc(sizeof(char)*20);
     char * type = malloc(sizeof(char)*15);
 
@@ -61,14 +62,14 @@ struct Func * storeFuncParameters(char ** array, struct Func * funcList, int arr
         if (strchr(array[i+1], ',') != NULL) {
             strcpy(name, strtok(array[i+1], ","));
 /*            printf("[[%s, %s]]\n", type, name);
-*/            funcList->parameters = addVarToList(funcList->parameters, type, name, "");
-            funcList = storeFuncParameters(array, funcList, i+2);
+*/          funcList->parameters = addVarToList(funcList->parameters, type, name, "");
+            newIndex = storeFuncParameters(array, funcList, i+2);
         }
-        else if (strcmp(array[i+2], ",\n") == 0) {
+        else if (strcmp(array[i+2], ",\n") == 0) { /*Would it ever get to this else if (cause , in first if statement)*/
             strcpy(name, array[i+1]);
             removeCharFromString(name, '\n');
             funcList->parameters = addVarToList(funcList->parameters, type, name, "");
-            funcList = storeFuncParameters(array, funcList, i+3);  
+            newIndex = storeFuncParameters(array, funcList, i+3);  
         }
         else {
             if (strchr(array[i+1], ')') != NULL) 
@@ -77,8 +78,76 @@ struct Func * storeFuncParameters(char ** array, struct Func * funcList, int arr
                 strcpy(name, array[i+1]);
                 removeCharFromString(name, '\n');
             }
+            newIndex = i+2;
             funcList->parameters = addVarToList(funcList->parameters, type, name, "");
         }
     }
-    return funcList;
+    return newIndex;
+}
+
+
+/*
+Recursively stores the function variables.
+*/
+int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int arrayIndex) {
+
+    int i;
+
+    for (i=arrayIndex; i<arraySize; i++) {
+
+        char * name = calloc(20, sizeof(char));
+        char * type = malloc(sizeof(char)*15);
+        char * value = malloc(sizeof(char)*40);
+
+        if (compareTypes(array[i])) {
+            strcpy(type, array[i]);
+            removeCharFromString(type, '\n');
+
+            if (strchr(array[i+1], ';') != NULL) {
+                strcpy(name, strtok(array[i+1], ";"));
+/*              printf("[[%s, %s]]\n", type, name);
+*/              funcList->variables = addVarToList(funcList->variables, type, name, "");
+                i = i + 1;
+            }
+            else if (strcmp(array[i+2], ";\n") == 0) { 
+                strcpy(name, array[i+1]);
+                removeCharFromString(name, '\n');
+                funcList->variables = addVarToList(funcList->variables, type, name, "");
+                i = i + 1;
+            }
+            else if (strchr(array[i+1], '=') != NULL) {
+                strcpy(name, strtok(array[i+1], "="));
+                if (strchr(array[i+2], ';') != NULL) /*Just a confirmation check*/
+                    strcpy(value, strtok(array[i+2], ";"));
+                funcList->variables = addVarToList(funcList->variables, type, name, value);
+                i = i + 2;
+            }
+            else if (strcmp(array[i+2], "=\n") == 0) {
+                strcpy(name, array[i+1]);
+                removeCharFromString(name, '\n');
+                if (strchr(array[i+3], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
+                    strcpy(value, strtok(array[i+2], ";"));
+                funcList->variables = addVarToList(funcList->variables, type, name, value);
+                i = i + 3;
+            }
+        }
+        else if (strchr(array[i], '=') != NULL) {
+            strcpy(name, strtok(array[i], "="));
+            if (strchr(array[i+1], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
+                strcpy(value, strtok(array[i+2], ";"));
+            funcList->variables = addVarToList(funcList->variables, type, name, value);
+            i = i + 2;
+        }
+        else if (strcmp(array[i+1], "=\n") == 0) {
+            strcpy(name, array[i]);
+            removeCharFromString(name, '\n');
+            if (strchr(array[i+2], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
+                strcpy(value, strtok(array[i+2], ";"));
+            funcList->variables = addVarToList(funcList->variables, type, name, value);
+            i = i + 2;
+        }
+
+        else if (strchr(array[i], '(') != NULL || strchr(array[i], '}') != NULL) 
+            return i-1;
+    }
 }

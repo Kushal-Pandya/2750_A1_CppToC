@@ -79,6 +79,7 @@ int compareTypes(char * token);
 int getIndexOfChar(char * string, char c);
 int removeCharFromString(char * string, char c);
 
-struct Func * storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex);
+int storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex);
+int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int arrayIndex);
 
 

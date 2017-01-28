@@ -10,8 +10,9 @@ struct B {
 	int (*Bfn2) ();
 };
 
-int Bfn() {
-	printf("Bfn printed\n");
+int Bfn(struct B self) {
+	int c = 5, f = 5;
+	printf("Bfn printed %d\n", self.b);
 }
 
 int Bfn2() {
@@ -21,6 +22,7 @@ int Bfn2() {
 int constructorB(struct B* self) {
 	self->Bfn = &Bfn;
 	self->Bfn2 = &Bfn2;
+	self->b = 5;
 }
 
 int main(int argc, char* argv[]) {
@@ -28,9 +30,9 @@ int main(int argc, char* argv[]) {
 	struct B myB;
 	constructorB(&myB);
 
-	myB.b = 3;
-	myB.Bfn();
-	myB.Bfn2();
+	myB.Bfn(myB);
+	myB.Bfn2(myB);
+
 
 	return 0;
 }

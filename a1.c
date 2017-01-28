@@ -148,6 +148,7 @@ int parseFile(FILE * file) {
 			case ')':
 			case '{':
 			case '}':
+			case '=':
 				fprintf(assetsFile, "%c\n", c);
 				lastCharSpace = 1;
 				lastCharNewLine = 0;
@@ -244,7 +245,8 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 			classList->functions = addFuncToList(classList->functions, type, name);
 
 			if (strcmp(array[i+1], ")\n") != 0) { /*storing parameters*/
-				classList->functions = storeFuncParameters(array, classList->functions, i+1);
+				int temp = storeFuncParameters(array, classList->functions, i+1);
+				i = temp;
 			}
 
 		}
@@ -266,13 +268,15 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 				strcpy(type, array[i-1]);
 				removeCharFromString(type, '\n');
 			}
-			printf("[%s, %s]\n", type, name);
+			printf("[%s, %s]\n", type, name); /*NEED TO BE ABLE TO ADD MULTILINE VARIABLES*/
 			classList->variables = addVarToList(classList->variables, type, name, "");
 		}
 
 
 		if (strcmp(array[i], "{\n") == 0) {
 			codeBlocks++;
+			int temp = storeFuncVariables(array, arraySize, classList->functions, i+1);
+			i = temp;
 		}
 		else if (strcmp(array[i], "}\n") == 0) {
 			codeBlocks--;
@@ -286,6 +290,7 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 	displayVarList(classList->variables);
 	displayFuncList(classList->functions);
 	displayVarList(classList->functions->parameters);
+	displayVarList(classList->functions->variables);
 }
 
 
@@ -394,13 +399,14 @@ int findKeyWords(char * token, int startQuote) {
 	return 0;
 }
 
-int compareTypes(char * type) {
+int compareTypes(char * type) { 
 	if (strcmp(type, "int\n") == 0) return 1;
 	else if (strcmp(type, "double\n") == 0) return 1;
 	else if (strcmp(type, "float\n") == 0) return 1;
 	else if (strcmp(type, "char\n") == 0) return 1;
 	else if (strcmp(type, "short\n") == 0) return 1;
 	else if (strcmp(type, "void\n") == 0) return 1;
+	else if (strcmp(type, "struct\n") == 0) return 1;
 	else return 0;
 }
 

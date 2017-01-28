@@ -29,9 +29,9 @@ struct Var {
 struct Func {
 	char * type;
 	char * name;
-	List * parameters;
-	List * contents;
+	struct Var * parameters;
 	struct Var * variables;	
+	List * contents;
 	struct Func * next;
 } Func;
 
@@ -67,9 +67,18 @@ extern void destroyVarList(struct Var * varList);
 
 int parseFile(FILE * file);
 char ** createArray(int tokens);
+
+int readClass(char ** array, int arraySize, int currentIndex, struct Class * classList);
 int readArray(char ** array, int size);
+
 int freeArray(char ** array, int size);
 
 int findKeyWords(char * token, int startQuote);
 int compareTypes(char * token);
+
+int getIndexOfChar(char * string, char c);
+int removeCharFromString(char * string, char c);
+
+struct Func * storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex);
+
 

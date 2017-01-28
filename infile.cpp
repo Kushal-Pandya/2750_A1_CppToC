@@ -12,6 +12,7 @@ class A {
 		return (1+1);
 	}
 	int subtract(int d, int e) {
+		int c;
 		return (d-e);
 	}
 };

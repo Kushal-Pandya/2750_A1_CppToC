@@ -206,59 +206,151 @@ char ** createArray(int tokens) {
 	return tokenArray;
 }
 
+int readClass(char ** array, int arraySize, int currentIndex, struct Class * classList) {
+
+	int i; 
+
+	int foundType = 0;
+	int codeBlocks = 0;
+	int inFunc = 0;
+
+	if (strcmp(array[currentIndex+1], "{\n") != 0) {
+		return 0;
+	}
+
+	for (i=currentIndex+2; i<arraySize; i++) {
+		
+		char * name = malloc(sizeof(char)*20);
+		char * type = malloc(sizeof(char)*15);
+
+
+		if (strchr(array[i], '(') != NULL && codeBlocks == 0) { /*functions*/
+			if (strcmp(array[i], "(\n") == 0) {
+				strcpy(name, array[i-1]);
+				removeCharFromString(name, '\n');
+
+				if (compareTypes(array[i-2])) {
+					strcpy(type, array[i-2]);
+					removeCharFromString(type, '\n');
+				}
+				else 
+					strcpy(type, "");
+			}
+			else {
+				strcpy(name, strtok(array[i], "(")); 
+				strcpy(type, array[i-1]);
+				removeCharFromString(type, '\n');
+			}
+			classList->functions = addFuncToList(classList->functions, type, name);
+
+			if (strcmp(array[i+1], ")\n") != 0) { /*storing parameters*/
+				classList->functions = storeFuncParameters(array, classList->functions, i+1);
+			}
+
+		}
+		else if (strchr(array[i], ';') != NULL && codeBlocks == 0) { /*local vars*/
+			if (strcmp(array[i], ";\n") == 0) {
+				
+				strcpy(name, array[i-1]);
+				removeCharFromString(name, '\n');
+
+				if (compareTypes(array[i-2])) {
+					strcpy(type, array[i-2]);
+					removeCharFromString(type, '\n');
+				}
+				else 
+					strcpy(type, "");
+			}
+			else {
+				strcpy(name, strtok(array[i], ";")); 
+				strcpy(type, array[i-1]);
+				removeCharFromString(type, '\n');
+			}
+			printf("[%s, %s]\n", type, name);
+			classList->variables = addVarToList(classList->variables, type, name, "");
+		}
+
+
+		if (strcmp(array[i], "{\n") == 0) {
+			codeBlocks++;
+		}
+		else if (strcmp(array[i], "}\n") == 0) {
+			codeBlocks--;
+			if (codeBlocks < 0) {
+				free(name);
+				free(type);
+				break; /*NEED TO CHANGE THIS BACK TO return i*/
+			}
+		}
+	}
+	displayVarList(classList->variables);
+	displayFuncList(classList->functions);
+	displayVarList(classList->functions->parameters);
+}
+
 
 int readArray(char ** array, int size) {
 
-	int isClass = 0; /* to get the class name*/
+	int isClass = 0; /* to get the class name, to identify if the next token is a class name*/
 	int codeBlocks = 0; /* how many nested codeBlocks*/
 
 	int possFunc = 0; /* Enabled when a class starts*/
 	int confirmFunc = 0; /* Enabled when function starts*/
 
+	int inClass = 0; /* To know if current code block is in a class*/
+	int inFunc = 0; /* To know if current code block is in a func*/
+
 	char * className = calloc(10, sizeof(char));
 	char * temp = calloc(20, sizeof(char));
 	char * temp2 = calloc(20, sizeof(char));
 
+	struct Class * classList = createClassList(""); /*Create empty list of class structs*/
+	struct Func * funcList = createFuncList("", ""); /*Create empty list of func structs*/
+	struct Var * varList = createVarList("", "", ""); /*Create empty list of var structs*/
+
+	struct List * globalString = createList("");
+
 	int i;
 	for (i=0; i<size; i++) {
+
+		if (array[i][0] == '#' || array[i][0] == '/') {
+			printf("TRUE %s", array[i]); /* NEED to store into globalString list*/
+		}
+
 
 		if (strcmp(array[i], "class\n") == 0) {
 			strcpy(array[i], "struct\n");
 			isClass = 1;
 		}
 		else if (isClass) {
-			/* store class name here*/
 			strncpy(className, array[i], strlen(array[i])-1);
-			isClass = 0;	
+			
+			if (checkIfClassExists(classList, className) == 0) {
+				classList = addClassToList(classList, className);
+				readClass(array, size, i, classList);
+			}
+			isClass = 0;
 		}
 
+
+/*		
 		if (strcmp(array[i], "{\n") == 0) {
 			codeBlocks++; 
-			isClass = 0;	
+			if (isClass == 1) {
+				isClass = 0;
+				inClass = 1;
+			}
+			else inFunc = 1;	
 		} 
-		else if (strcmp(array[i], "}\n") == 0) codeBlocks--; 
-		else if (strstr(array[i], "(\n") != NULL && codeBlocks == 1) {
+		else if (strcmp(array[i], "}\n") == 0) { 
+			codeBlocks--; 
+			if (inClass == 1 && inFunc==1) inFunc == 0;
+			else if (inClass == 1 && inFunc==0) inClass = 0;
+		}  */
 
-			if (strchr(array[i], '.') != NULL) {
-				char * varName = strtok(array[i], ".");
-				char * token = strtok(NULL, ".");
 
-				strcpy(temp2, token);
-				strcat(varName, ".");
-				strcpy(temp, className);
-				strcat(temp, temp2);
-				strcat(varName, temp);
-				strcpy(array[i], varName);
-			}
-			else {
-				strcpy(temp, className);
-				strcat(temp, array[i]);
-				strcpy(array[i], temp);
-			}
-		}
-
-		printf("%d %d %s %s", codeBlocks, isClass, className, array[i]);
-	}
+/*		printf("%d %d %s %s", codeBlocks, isClass, className, array[i]);
+*/	}
 
 	/* Testing printing
 	for (int i=0; i<size; i++)
@@ -299,6 +391,35 @@ int findKeyWords(char * token, int startQuote) {
 		}
 	}
 
+	return 0;
+}
+
+int compareTypes(char * type) {
+	if (strcmp(type, "int\n") == 0) return 1;
+	else if (strcmp(type, "double\n") == 0) return 1;
+	else if (strcmp(type, "float\n") == 0) return 1;
+	else if (strcmp(type, "char\n") == 0) return 1;
+	else if (strcmp(type, "short\n") == 0) return 1;
+	else if (strcmp(type, "void\n") == 0) return 1;
+	else return 0;
+}
+
+int getIndexOfChar(char * string, char c) {
+	const char *ptr = strchr(string, c);
+	int index;
+
+	if (ptr) 
+		return index = ptr - string;
+	return -1;
+}
+
+int removeCharFromString(char * string, char c) {
+	int result = getIndexOfChar(string, c);
+
+	if (result >= 0) {
+		memmove(&string[result], &string[result + 1], strlen(string) - result);
+		return 1;
+	}
 	return 0;
 }
 

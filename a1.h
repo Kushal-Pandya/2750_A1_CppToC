@@ -46,6 +46,9 @@ struct Class {
 extern List* createList(char * newValue);
 extern List* addValue(List* list, char* newValue);
 extern void displayList(List *list);
+extern void displayListReverse(List *list);
+extern char *getListNode(List *list);
+extern int getListSize(List *list);
 extern void destroyList(List* list);
 
 extern struct Class * createClassList(char * name);
@@ -58,6 +61,8 @@ extern struct Func * createFuncList(char * type, char * name);
 extern struct Func * addFuncToList(struct Func * funcList, char *type, char * name);
 extern int checkIfFuncExists(struct Func * funcList, char *name);
 extern void displayFuncList(struct Func * funcList);
+int getFuncListSize(struct Func *funcList);
+char *getFuncListNode(struct Func *funcList);
 extern void destroyFuncList(struct Func * funcList);
 
 extern struct Var * createVarList(char * type, char * name, char * value);
@@ -70,7 +75,7 @@ int parseFile(FILE * file);
 char ** createArray(int tokens);
 
 int readClass(char ** array, int arraySize, int currentIndex, struct Class * classList);
-int readArray(char ** array, int size);
+int readArray(char ** array, int size, char *fileName);
 
 int freeArray(char ** array, int size);
 
@@ -82,6 +87,8 @@ int removeCharFromString(char * string, char c);
 
 struct Var* storeMultiLineVars(char **array, int arraySize, struct Var *varList, int* arrayIndex, char *type, char *name);
 struct Var* storeGlobalVariables(char ** array, int arraySize, struct Var * varList, int *arrayIndex);
+int getVarListSize(struct Var *varList);
+char *getVarListNode(struct Var *varList);
 
 int storeClassVariables(char ** array, int arraySize, struct Class * classList, int arrayIndex);
 int storeMultiLineClassVars(char **array, int arraySize, struct Func *funcList, int arrayIndex, char *type, char *name);
@@ -90,4 +97,5 @@ int storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex);
 int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int arrayIndex);
 int storeMultiLineFuncVariables(char **array, int arraySize, struct Func *funcList, int arrayIndex, char *type);
 
-
+int printToOutFile(List *globalList, struct Class *classList, struct Func *funcList, struct Var *varList, char *fileName);
+char *getNewFileName(char *oldName);

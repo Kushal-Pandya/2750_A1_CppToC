@@ -3,6 +3,10 @@
 #include<string.h>
 #include<assert.h>
 
+struct Test{
+    int i;
+} Test;
+
 
 void getPair(int* a, int* d) {
     // Check that these are not pointing to NULL
@@ -22,6 +26,9 @@ int main() {
     int a, b;
     b = 4;
     getPair(&a, &b);
+
+    struct Test myA;
+    struct Test myB;
 
     printf("%d %d\n", a, b);
 

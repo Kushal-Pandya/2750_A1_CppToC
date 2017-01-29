@@ -36,6 +36,45 @@ void displayVarList(struct Var * varList) {
 		printf("VarType:%s VarName:%s VarValue:%s\n", iter->type, iter->name, iter->value);
 }
 
+int getVarListSize(struct Var *varList) {
+    struct Var *temp = varList;
+    int size = 0;
+
+    while (temp != NULL) {
+        ++size;
+        temp = temp->next;
+    }
+    return size;
+}
+
+char *getVarListNode(struct Var *varList) {
+    struct Var *temp = varList;
+    struct Var *t;
+    char *toReturn = malloc(sizeof(char)*200);
+    while(temp->next != NULL) {
+        t=temp;
+        temp=temp->next;
+    }
+
+    if (strcmp(t->type, "class") == 0) {
+        strcpy(toReturn, "struct");
+        strcat(toReturn, " ");
+        strcat(toReturn, t->name);
+        strcat(toReturn, " ");
+        strcat(toReturn, t->value);
+        strcat(toReturn, ";");
+    }
+    else {
+        strcpy(toReturn, t->type);
+        strcat(toReturn, " ");
+        strcat(toReturn, t->name);
+        strcat(toReturn, ";");
+    }
+    free(t->next);
+    t->next = NULL;
+    return toReturn;
+}
+
 void destroyVarList(struct Var * varList) {
     if (varList->next != NULL) {
             destroyVarList(varList->next);

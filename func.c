@@ -45,6 +45,99 @@ void displayFuncList(struct Func * funcList) {
     }
 }
 
+int getFuncListSize(struct Func *funcList) {
+    struct Func *temp = funcList;
+    int size = 0;
+
+    while (temp != NULL) {
+        ++size;
+        temp = temp->next;
+    }
+    return size;
+}
+
+char *getFuncListNode(struct Func *funcList) {
+    struct Func *temp = funcList;
+    struct Func *t;
+    
+    char *toReturn = malloc(sizeof(char)*1000);
+    char *tempStr = calloc(20, sizeof(char));
+
+    while(temp->next != NULL) {
+        t=temp;
+        temp=temp->next;
+    }
+
+    strcpy(toReturn, t->type); /*Appending type and name to function*/
+    strcat(toReturn, " ");
+    strcat(toReturn, t->name);
+    strcat(toReturn, "(");
+
+    int i;
+    for (i=getVarListSize(t->parameters)-1; i>0; i--) { /*Appending parameters to function*/
+        tempStr = getVarListNode(t->parameters);
+        if (strchr(tempStr, ';') != NULL) {
+            strcat(toReturn, strtok(tempStr, ";"));
+        }
+        else {
+            strcat(toReturn, tempStr);   
+        }
+
+        if (getVarListSize(t->parameters) > 1) 
+            strcat(toReturn, ",");
+    }
+
+    strcat(toReturn, ")");
+    strcat(toReturn, " {\n");
+
+    for (i=getVarListSize(t->variables)-1; i>0; i--) { /*Appending variables to function*/
+
+        char *checkIfClass = calloc(10, sizeof(char));
+        char *copyOfTemp = calloc(10, sizeof(char));
+
+        tempStr = getVarListNode(t->variables);
+        strcat(tempStr, "\n");
+        strcpy(copyOfTemp, tempStr);
+
+        checkIfClass = strtok(copyOfTemp, " ");
+        if (strcmp(checkIfClass, "struct") == 0) { /*Adding constructor to class variable declarations*/
+            char *name = calloc(10, sizeof(char));
+            char *value = calloc(15, sizeof(char));
+            char *constructorName = calloc(50, sizeof(char));
+
+            name = strtok(NULL, " ");
+            value = strtok(NULL, " ");
+            if (strchr(value, ';') != NULL) {
+                strcpy(value, strtok(value, ";"));
+            }
+
+            strcat(toReturn, tempStr);
+            strcpy(constructorName, "constructor");
+            strcat(constructorName, name);
+            strcat(constructorName, "(&");
+            strcat(constructorName, value);
+            strcat(constructorName, ");\n");
+
+            strcat(toReturn, constructorName);
+        }
+        else 
+            strcat(toReturn, tempStr);
+    }
+
+    for (i=getListSize(t->contents)-1; i>0; i--) { /*Appending contents to function*/
+        tempStr = getListNode(t->contents);
+
+        if (strchr(tempStr, ';')) {
+            strcat(tempStr, "\n");
+        }
+        strcat(toReturn, tempStr);
+    }
+    strcat(toReturn, "}\n");
+
+    free(t->next);
+    t->next = NULL;
+    return toReturn;
+}
 
 void destroyFuncList(struct Func * funcList) {
     if (funcList->next != NULL) {
@@ -171,7 +264,6 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
             }
         }
         else if (strchr(array[i], '}') != NULL) {
-            printf("END%s\n", array[i]);
             return i-1;
         }
         else {

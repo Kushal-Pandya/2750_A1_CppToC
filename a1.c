@@ -38,7 +38,7 @@ int main(int argc, char * argv[]) {
 	tokens = parseFile(file);
 
 	char ** array = createArray(tokens);
-	readArray(array, tokens);
+	readArray(array, tokens, fileName);
 
 	freeArray(array, tokens); 
 
@@ -279,9 +279,8 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 }
 
 
-int readArray(char ** array, int size) {
+int readArray(char ** array, int size, char *fileName) {
 
-	int isClass = 0; /* to get the class name, to identify if the next token is a class name*/
 	int codeBlocks = 0; /* how many nested codeBlocks*/
 	int noMoreVars = 0;
 	int inFunc = 0;
@@ -378,6 +377,10 @@ int readArray(char ** array, int size) {
 			}
 			noMoreVars = 1;
 			funcList = addFuncToList(funcList, type, name);
+			
+			strcpy(temp, "fn ");
+			strcat(temp, name);
+			globalList = addValue(globalList, temp);
 
 			if (strcmp(array[i+1], ")\n") != 0) { /*if )\n not equal to array i+1,  storing parameters*/
 				inFunc = 1;
@@ -395,7 +398,6 @@ int readArray(char ** array, int size) {
 		if (strcmp(array[i], "{\n") == 0 && inFunc == 1 && codeBlocks == 0) {
 			codeBlocks++;
 			noMoreVars = 1;
-			printf("BEFORE:%s", array[i+1]);
 			int temp = storeFuncVariables(array, size, funcList, i+1);
 			i = temp;
 		}
@@ -413,13 +415,80 @@ int readArray(char ** array, int size) {
 	printf("---------------------------------\n");
 	displayFuncList(funcList);
 
-	/* Testing printing
-	for (int i=0; i<size; i++)
-	printf("%s", array[i]); */
-
+	printToOutFile(globalList, classList, funcList, varList, fileName);
 
 	return 0;
 }
+
+
+int printToOutFile(List *globalList, struct Class *classList, struct Func *funcList, struct Var *varList, char *fileName) {
+
+	fileName = getNewFileName(fileName);
+	FILE * outFile = fopen(fileName, "w");
+	char *item = malloc(sizeof(char)*TOKEN_LIMIT);
+	
+	int macrosDone = 0;
+	int globalVarsDone = 0;
+
+	displayListReverse(globalList);
+	printf("\n");
+	int size = getListSize(globalList);
+
+	int i;
+	for (i=size-1; i>0; i--) {
+		item = getListNode(globalList);
+
+		if (item[0] == '#') {
+			fprintf(outFile, "%s\n", item);
+		}
+		else if (item[0] == '/') {
+			fprintf(outFile, "\n%s\n", item);
+			macrosDone = 1;
+		}
+		else if (macrosDone == 1) {
+			int j;
+			fprintf(outFile, "\n");
+			for (j=getVarListSize(varList)-1; j>0; j--) {
+				fprintf(outFile, "%s\n", getVarListNode(varList));
+			}
+		}
+
+		if (strstr(item, "fn ")) {
+			int j;
+			fprintf(outFile, "\n");
+			for (j=getFuncListSize(funcList)-1; j>0; j--) {
+				fprintf(outFile, "%s\n", getFuncListNode(funcList));
+			}
+		}
+		else if(strstr(item, "class ")) {
+
+		}
+	}
+	
+/*	printf("1%s\n", getListNode(globalList));
+	printf("2%s\n", getListNode(globalList));*/
+
+	return 0;
+}
+
+char *getNewFileName(char *oldName) {
+
+	char * newName = malloc(sizeof(char)*20);
+
+	if (strstr(oldName, ".cc") != NULL) {
+		strcpy(newName, strtok(oldName, ".cc"));
+	}
+	else if (strchr(oldName, '.') != NULL) {
+		strcpy(newName, strtok(oldName, "."));
+	}
+	else {
+		strcpy(newName, oldName);
+	}
+	
+	strcat(newName, ".c");
+	return newName;
+}
+
 
 /*
 	Returns:

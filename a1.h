@@ -45,6 +45,7 @@ struct Class {
 
 extern List* createList(char * newValue);
 extern List* addValue(List* list, char* newValue);
+extern void displayList(List *list);
 extern void destroyList(List* list);
 
 extern struct Class * createClassList(char * name);
@@ -79,7 +80,14 @@ int compareTypes(char * token);
 int getIndexOfChar(char * string, char c);
 int removeCharFromString(char * string, char c);
 
+struct Var* storeMultiLineVars(char **array, int arraySize, struct Var *varList, int* arrayIndex, char *type, char *name);
+struct Var* storeGlobalVariables(char ** array, int arraySize, struct Var * varList, int *arrayIndex);
+
+int storeClassVariables(char ** array, int arraySize, struct Class * classList, int arrayIndex);
+int storeMultiLineClassVars(char **array, int arraySize, struct Func *funcList, int arrayIndex, char *type, char *name);
+
 int storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex);
 int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int arrayIndex);
+int storeMultiLineFuncVariables(char **array, int arraySize, struct Func *funcList, int arrayIndex, char *type);
 
 

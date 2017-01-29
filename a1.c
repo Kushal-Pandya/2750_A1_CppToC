@@ -210,20 +210,17 @@ char ** createArray(int tokens) {
 int readClass(char ** array, int arraySize, int currentIndex, struct Class * classList) {
 
 	int i; 
-
-	int foundType = 0;
 	int codeBlocks = 0;
-	int inFunc = 0;
+	int noMoreVars = 0;
 
-	if (strcmp(array[currentIndex+1], "{\n") != 0) {
-		return 0;
+	/*if (strchr(array[currentIndex], '{') != NULL) { 
+		return currentIndex;
 	}
-
-	for (i=currentIndex+2; i<arraySize; i++) {
+*/
+	for (i=currentIndex+1; i<arraySize; i++) {
 		
 		char * name = malloc(sizeof(char)*20);
 		char * type = malloc(sizeof(char)*15);
-
 
 		if (strchr(array[i], '(') != NULL && codeBlocks == 0) { /*functions*/
 			if (strcmp(array[i], "(\n") == 0) {
@@ -242,6 +239,7 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 				strcpy(type, array[i-1]);
 				removeCharFromString(type, '\n');
 			}
+			noMoreVars = 1;
 			classList->functions = addFuncToList(classList->functions, type, name);
 
 			if (strcmp(array[i+1], ")\n") != 0) { /*storing parameters*/
@@ -250,9 +248,119 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 			}
 
 		}
-		else if (strchr(array[i], ';') != NULL && codeBlocks == 0) { /*local vars*/
-			if (strcmp(array[i], ";\n") == 0) {
-				
+		else if (compareTypes(array[i]) && codeBlocks == 0 && noMoreVars == 0) { /*local class vars*/
+			if (strchr(array[i+1], '(') == NULL) { /*if ( not in array at i+1*/
+				int temp = storeClassVariables(array, arraySize, classList, i);
+				i = temp;
+			}
+		}
+
+
+		if (strcmp(array[i], "{\n") == 0) {
+			noMoreVars = 1;
+			codeBlocks++;
+			int temp = storeFuncVariables(array, arraySize, classList->functions, i+1);
+			i = temp;
+		}
+		else if (strcmp(array[i], "}\n") == 0) {
+			codeBlocks--;
+			if (codeBlocks < 0) {
+				free(name);
+				free(type);
+				return i;
+			}
+		}
+	}
+	return currentIndex;
+/*	displayVarList(classList->variables);
+	displayFuncList(classList->functions);
+	displayVarList(classList->functions->parameters);
+	displayVarList(classList->functions->variables);*/
+}
+
+
+int readArray(char ** array, int size) {
+
+	int isClass = 0; /* to get the class name, to identify if the next token is a class name*/
+	int codeBlocks = 0; /* how many nested codeBlocks*/
+	int noMoreVars = 0;
+	int inFunc = 0;
+
+	struct Class * classList = createClassList(""); /*Create empty list of class structs*/
+	struct Func * funcList = createFuncList("", ""); /*Create empty list of func structs*/
+	struct Var * varList = createVarList("", "", ""); /*Create empty list of var structs*/
+
+	struct List * globalList = createList("");
+
+	int i;
+	for (i=0; i<size; i++) {
+
+		char * className = calloc(10, sizeof(char));
+		char * temp = calloc(20, sizeof(char));
+		char * name = calloc(20, sizeof(char));
+        char * type = malloc(sizeof(char)*15);
+        char * value = malloc(sizeof(char)*40);
+
+		if (array[i][0] == '#' || array[i][0] == '/') {
+			strcpy(temp, array[i]);
+			removeCharFromString(temp, '\n');
+			globalList = addValue(globalList, temp);
+		}
+
+		if (strcmp(array[i], "class\n") == 0) {
+			if (strchr(array[i+1], '{') != NULL) {
+				strcpy(className, strtok(array[i+1], "{"));
+
+				strcpy(temp, "class ");
+				strcat(temp, className);
+				globalList = addValue(globalList, temp);
+				if (checkIfClassExists(classList, className) == 0) {
+					codeBlocks++;
+					classList = addClassToList(classList, className);
+					int temp = readClass(array, size, i+1, classList);
+					i = temp;
+				}
+				noMoreVars = 1;
+			}
+			else if (strcmp(array[i+2], "{\n") == 0) {
+				strcpy(className, array[i+1]);
+                removeCharFromString(className, '\n');
+
+                strcpy(temp, "class ");
+				strcat(temp, className);
+				globalList = addValue(globalList, temp);
+				if (checkIfClassExists(classList, className) == 0) {
+					codeBlocks++;
+					classList = addClassToList(classList, className);
+					int temp = readClass(array, size, i+2, classList);
+					i = temp;
+				}
+				noMoreVars = 1;
+			} /*gotta be a class var*/
+			else if (noMoreVars == 0) {
+				strcpy(type, array[i]);
+            	removeCharFromString(type, '\n');
+            	strcpy(name, array[i+1]);
+                removeCharFromString(name, '\n');
+
+            	if (strchr(array[i+2], ';') != NULL) {
+                    strcpy(value, strtok(array[i+2], ";"));
+                    varList = addVarToList(varList, type, name, value);
+                    i = i + 2;
+                }
+                else if (strcmp(array[i+3], ";\n") == 0) { 
+                    strcpy(value, array[i+2]);
+                    removeCharFromString(value, '\n');
+                    varList = addVarToList(varList, type, name, value);
+                    i = i + 3;
+                }
+                else if (strchr(array[i+2], ',') != NULL || strcmp(array[i+3], ",\n") == 0) {
+                    varList = storeMultiLineVars(array, size, varList, &i, type, name);
+                }
+			}
+		}
+		else if (strchr(array[i], '(') != NULL && codeBlocks == 0) { /*functions*/
+			if (strcmp(array[i], "(\n") == 0) {
 				strcpy(name, array[i-1]);
 				removeCharFromString(name, '\n');
 
@@ -264,98 +372,46 @@ int readClass(char ** array, int arraySize, int currentIndex, struct Class * cla
 					strcpy(type, "");
 			}
 			else {
-				strcpy(name, strtok(array[i], ";")); 
+				strcpy(name, strtok(array[i], "(")); 
 				strcpy(type, array[i-1]);
 				removeCharFromString(type, '\n');
 			}
-			printf("[%s, %s]\n", type, name); /*NEED TO BE ABLE TO ADD MULTILINE VARIABLES*/
-			classList->variables = addVarToList(classList->variables, type, name, "");
+			noMoreVars = 1;
+			funcList = addFuncToList(funcList, type, name);
+
+			if (strcmp(array[i+1], ")\n") != 0) { /*if )\n not equal to array i+1,  storing parameters*/
+				inFunc = 1;
+				int temp = storeFuncParameters(array, funcList, i+1);
+				i = temp;
+			}
+
 		}
-
-
-		if (strcmp(array[i], "{\n") == 0) {
+		else if (compareTypes(array[i]) && codeBlocks == 0 && noMoreVars == 0) { /*local class vars*/
+			if (strchr(array[i+1], '(') == NULL) { /*if ( not in array at i+1*/
+				varList = storeGlobalVariables(array, size, varList, &i);
+			}
+		}	
+	
+		if (strcmp(array[i], "{\n") == 0 && inFunc == 1 && codeBlocks == 0) {
 			codeBlocks++;
-			int temp = storeFuncVariables(array, arraySize, classList->functions, i+1);
+			noMoreVars = 1;
+			printf("BEFORE:%s", array[i+1]);
+			int temp = storeFuncVariables(array, size, funcList, i+1);
 			i = temp;
 		}
 		else if (strcmp(array[i], "}\n") == 0) {
 			codeBlocks--;
-			if (codeBlocks < 0) {
-				free(name);
-				free(type);
-				break; /*NEED TO CHANGE THIS BACK TO return i*/
-			}
+			inFunc = 0;
 		}
 	}
-	displayVarList(classList->variables);
-	displayFuncList(classList->functions);
-	displayVarList(classList->functions->parameters);
-	displayVarList(classList->functions->variables);
-}
 
-
-int readArray(char ** array, int size) {
-
-	int isClass = 0; /* to get the class name, to identify if the next token is a class name*/
-	int codeBlocks = 0; /* how many nested codeBlocks*/
-
-	int possFunc = 0; /* Enabled when a class starts*/
-	int confirmFunc = 0; /* Enabled when function starts*/
-
-	int inClass = 0; /* To know if current code block is in a class*/
-	int inFunc = 0; /* To know if current code block is in a func*/
-
-	char * className = calloc(10, sizeof(char));
-	char * temp = calloc(20, sizeof(char));
-	char * temp2 = calloc(20, sizeof(char));
-
-	struct Class * classList = createClassList(""); /*Create empty list of class structs*/
-	struct Func * funcList = createFuncList("", ""); /*Create empty list of func structs*/
-	struct Var * varList = createVarList("", "", ""); /*Create empty list of var structs*/
-
-	struct List * globalString = createList("");
-
-	int i;
-	for (i=0; i<size; i++) {
-
-		if (array[i][0] == '#' || array[i][0] == '/') {
-			printf("TRUE %s", array[i]); /* NEED to store into globalString list*/
-		}
-
-
-		if (strcmp(array[i], "class\n") == 0) {
-			strcpy(array[i], "struct\n");
-			isClass = 1;
-		}
-		else if (isClass) {
-			strncpy(className, array[i], strlen(array[i])-1);
-			
-			if (checkIfClassExists(classList, className) == 0) {
-				classList = addClassToList(classList, className);
-				readClass(array, size, i, classList);
-			}
-			isClass = 0;
-		}
-
-
-/*		
-		if (strcmp(array[i], "{\n") == 0) {
-			codeBlocks++; 
-			if (isClass == 1) {
-				isClass = 0;
-				inClass = 1;
-			}
-			else inFunc = 1;	
-		} 
-		else if (strcmp(array[i], "}\n") == 0) { 
-			codeBlocks--; 
-			if (inClass == 1 && inFunc==1) inFunc == 0;
-			else if (inClass == 1 && inFunc==0) inClass = 0;
-		}  */
-
-
-/*		printf("%d %d %s %s", codeBlocks, isClass, className, array[i]);
-*/	}
+	displayClassList(classList);
+	printf("---------------------------------\n");
+	displayList(globalList);
+	printf("---------------------------------\n");
+	displayVarList(varList);
+	printf("---------------------------------\n");
+	displayFuncList(funcList);
 
 	/* Testing printing
 	for (int i=0; i<size; i++)
@@ -406,7 +462,7 @@ int compareTypes(char * type) {
 	else if (strcmp(type, "char\n") == 0) return 1;
 	else if (strcmp(type, "short\n") == 0) return 1;
 	else if (strcmp(type, "void\n") == 0) return 1;
-	else if (strcmp(type, "struct\n") == 0) return 1;
+	else if (strcmp(type, "class\n") == 0) return 1;
 	else return 0;
 }
 

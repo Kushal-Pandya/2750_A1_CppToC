@@ -3,15 +3,25 @@
 
 // This is a comment
 
-float num = 1.5;
+//float num = 1.5;
+
+class A theA, otherA;
+float num;
+
+int fn(int param) {
+	printf("%d", param);
+}
 
 class A {
-	int a;
+	int a, b, c;
+	char *value;
 	int add() {
+		int p, one, two;
+		class A myA, myB;
 		/*This is also a comment*/
 		return (1+1);
 	}
-	int subtract(int d, int e) {
+	int subtract(int d, double e) {
 		int c;
 		float one= e;
 		e = 5;
@@ -26,7 +36,7 @@ class B {
 	}
 };
 
-int main() {
+int main(int argc, char *argv[]) {
 	class A myAClass;
 	class B myBClass;
 

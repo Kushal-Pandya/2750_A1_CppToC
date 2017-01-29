@@ -33,9 +33,18 @@ int checkIfFuncExists(struct Func * funcList, char *name) {
 
 void displayFuncList(struct Func * funcList) {
 	struct Func * iter;
-	for (iter=funcList; iter!=NULL; iter=iter->next) 
-		printf("%s %s\n", iter->type, iter->name);
+	for (iter=funcList; iter!=NULL; iter=iter->next) {
+		printf("FuncType:%s FuncName:%s\n", iter->type, iter->name);
+
+        printf("FuncParameters:\n");
+        displayVarList(iter->parameters);
+        printf("FuncVariables:\n");
+        displayVarList(iter->variables);
+        printf("FuncContents:\n");
+        displayList(iter->contents);
+    }
 }
+
 
 void destroyFuncList(struct Func * funcList) {
     if (funcList->next != NULL) {
@@ -87,11 +96,12 @@ int storeFuncParameters(char ** array, struct Func * funcList, int arrayIndex) {
 
 
 /*
-Recursively stores the function variables.
+Sequentially stores the function variables.
 */
 int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int arrayIndex) {
 
     int i;
+    int noMoreVars = 0;
 
     for (i=arrayIndex; i<arraySize; i++) {
 
@@ -99,14 +109,41 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
         char * type = malloc(sizeof(char)*15);
         char * value = malloc(sizeof(char)*40);
 
-        if (compareTypes(array[i])) {
+        printf("%s\n", array[i]);
+
+        if (compareTypes(array[i]) && noMoreVars == 0) {
+
             strcpy(type, array[i]);
             removeCharFromString(type, '\n');
 
-            if (strchr(array[i+1], ';') != NULL) {
+            if (strcmp(array[i], "class\n") == 0) {
+
+                /*strcpy(array[i], "struct\n");
+                strcpy(type, array[i]);
+                removeCharFromString(type, '\n');*/
+
+                strcpy(name, array[i+1]);
+                removeCharFromString(name, '\n');
+
+                if (strchr(array[i+2], ';') != NULL) {
+                    strcpy(value, strtok(array[i+2], ";"));
+                    funcList->variables = addVarToList(funcList->variables, type, name, value);
+                    i = i + 2;
+                }
+                else if (strcmp(array[i+3], ";\n") == 0) { 
+                    strcpy(value, array[i+2]);
+                    removeCharFromString(value, '\n');
+                    funcList->variables = addVarToList(funcList->variables, type, name, value);
+                    i = i + 3;
+                }
+                else if (strchr(array[i+2], ',') != NULL || strcmp(array[i+3], ",\n") == 0) {
+                    int temp = storeMultiLineClassVars(array, arraySize, funcList, i, type, name);
+                    i = temp;
+                }
+            }
+            else if (strchr(array[i+1], ';') != NULL) {
                 strcpy(name, strtok(array[i+1], ";"));
-/*              printf("[[%s, %s]]\n", type, name);
-*/              funcList->variables = addVarToList(funcList->variables, type, name, "");
+                funcList->variables = addVarToList(funcList->variables, type, name, "");
                 i = i + 1;
             }
             else if (strcmp(array[i+2], ";\n") == 0) { 
@@ -114,6 +151,10 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
                 removeCharFromString(name, '\n');
                 funcList->variables = addVarToList(funcList->variables, type, name, "");
                 i = i + 1;
+            }
+            else if (strchr(array[i+1], ',') != NULL || strcmp(array[i+2], ",\n") == 0) {
+                int temp = storeMultiLineFuncVariables(array, arraySize, funcList, i, type);
+                i = temp;
             }
             else if (strchr(array[i+1], '=') != NULL) {
                 strcpy(name, strtok(array[i+1], "="));
@@ -131,14 +172,14 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
                 i = i + 3;
             }
         }
-        else if (strchr(array[i], '=') != NULL) {
+        else if (strchr(array[i], '=') != NULL && noMoreVars == 0) {
             strcpy(name, strtok(array[i], "="));
             if (strchr(array[i+1], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
                 strcpy(value, strtok(array[i+2], ";"));
             funcList->variables = addVarToList(funcList->variables, type, name, value);
             i = i + 2;
         }
-        else if (strcmp(array[i+1], "=\n") == 0) {
+        else if (strcmp(array[i+1], "=\n") == 0 && noMoreVars == 0) {
             strcpy(name, array[i]);
             removeCharFromString(name, '\n');
             if (strchr(array[i+2], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
@@ -146,8 +187,83 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
             funcList->variables = addVarToList(funcList->variables, type, name, value);
             i = i + 2;
         }
-
-        else if (strchr(array[i], '(') != NULL || strchr(array[i], '}') != NULL) 
+        else if (strchr(array[i], '}') != NULL) {
+            printf("END%s\n", array[i]);
             return i-1;
+        }
+        else {
+            noMoreVars = 1;
+            strcpy(name, array[i]);
+            removeCharFromString(name, '\n');
+            funcList->contents = addValue(funcList->contents, name);
+        }
     }
+    return i;
+}
+
+
+int storeMultiLineFuncVariables(char **array, int arraySize, struct Func *funcList, int arrayIndex, char * type) {
+    int j;
+    int i = arrayIndex;
+
+    for (j=i+1; j<arraySize; j++) {
+
+        char * name = calloc(20, sizeof(char));
+        if (strchr(array[j], ',') != NULL) {
+            strcpy(name, strtok(array[j], ","));
+            funcList->variables = addVarToList(funcList->variables, type, name, ""); 
+        }
+        else if (strcmp(array[j+1], ",\n") == 0) {
+            strcpy(name, array[j]);
+            removeCharFromString(name, '\n'); 
+            funcList->variables = addVarToList(funcList->variables, type, name, "");
+            j = j + 1;
+        }
+        else if (strchr(array[j], ';') != NULL) {
+            strcpy(name, strtok(array[j], ";")); 
+            funcList->variables = addVarToList(funcList->variables, type, name, "");
+            return j;
+        }
+        else if (strcmp(array[j+1], ";\n") == 0) {
+            strcpy(name, array[j]);
+            removeCharFromString(name, '\n');
+            funcList->variables = addVarToList(funcList->variables, type, name, "");
+            j = j + 1;
+            return j;
+        }
+    }
+    return i;   
+}
+
+int storeMultiLineClassVars(char **array, int arraySize, struct Func *funcList, int arrayIndex, char *type, char *name) {
+    int j;
+    int i = arrayIndex;
+
+    for (j=i+2; j<arraySize; j++) {
+
+        char * value = calloc(20, sizeof(char));
+        if (strchr(array[j], ',') != NULL) {
+            strcpy(value, strtok(array[j], ","));
+            funcList->variables = addVarToList(funcList->variables, type, name, value); 
+        }
+        else if (strcmp(array[j+1], ",\n") == 0) {
+            strcpy(value, array[j]);
+            removeCharFromString(value, '\n'); 
+            funcList->variables = addVarToList(funcList->variables, type, name, value);
+            j = j + 1;
+        }
+        else if (strchr(array[j], ';') != NULL) {
+            strcpy(value, strtok(array[j], ";")); 
+            funcList->variables = addVarToList(funcList->variables, type, name, value);
+            return j;
+        }
+        else if (strcmp(array[j+1], ";\n") == 0) {
+            strcpy(value, array[j]);
+            removeCharFromString(value, '\n');
+            funcList->variables = addVarToList(funcList->variables, type, name, value);
+            j = j + 1;
+            return j;
+        }
+    }
+    return i; 
 }

@@ -25,6 +25,14 @@ List* addValue(List* list, char* newValue) {
 }
 
 
+void displayList(List * list) {
+        List* iter;
+        for (iter=list; iter!=NULL; iter=iter->next) {
+                printf("%s\n", iter->value);
+        }
+}
+
+
 void destroyList(List* list) {
 
         if (list->next != NULL) {

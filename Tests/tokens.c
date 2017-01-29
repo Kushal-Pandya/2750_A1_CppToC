@@ -4,7 +4,7 @@
 
 int a;
 
-struct B {
+struct B{
 	int b;
 	int (*Bfn) ();
 	int (*Bfn2) ();

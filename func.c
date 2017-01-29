@@ -109,8 +109,6 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
         char * type = malloc(sizeof(char)*15);
         char * value = malloc(sizeof(char)*40);
 
-        printf("%s\n", array[i]);
-
         if (compareTypes(array[i]) && noMoreVars == 0) {
 
             strcpy(type, array[i]);
@@ -152,7 +150,7 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
                 funcList->variables = addVarToList(funcList->variables, type, name, "");
                 i = i + 1;
             }
-            else if (strchr(array[i+1], ',') != NULL || strcmp(array[i+2], ",\n") == 0) {
+            else if (strchr(array[i+1], ',') != NULL || strcmp(array[i+2], ",\n") == 0) {                
                 int temp = storeMultiLineFuncVariables(array, arraySize, funcList, i, type);
                 i = temp;
             }
@@ -171,21 +169,6 @@ int storeFuncVariables(char ** array, int arraySize, struct Func * funcList, int
                 funcList->variables = addVarToList(funcList->variables, type, name, value);
                 i = i + 3;
             }
-        }
-        else if (strchr(array[i], '=') != NULL && noMoreVars == 0) {
-            strcpy(name, strtok(array[i], "="));
-            if (strchr(array[i+1], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
-                strcpy(value, strtok(array[i+2], ";"));
-            funcList->variables = addVarToList(funcList->variables, type, name, value);
-            i = i + 2;
-        }
-        else if (strcmp(array[i+1], "=\n") == 0 && noMoreVars == 0) {
-            strcpy(name, array[i]);
-            removeCharFromString(name, '\n');
-            if (strchr(array[i+2], ';') != NULL) /*Just a confirmation check, NEED to watch out for _; _ being space*/
-                strcpy(value, strtok(array[i+2], ";"));
-            funcList->variables = addVarToList(funcList->variables, type, name, value);
-            i = i + 2;
         }
         else if (strchr(array[i], '}') != NULL) {
             printf("END%s\n", array[i]);

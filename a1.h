@@ -58,7 +58,7 @@ extern void displayClassList(struct Class * classList);
 int getClassListSize(struct Class *classList);
 char *getClassListNode(struct Class *classList);
 extern void destroyClassList(struct Class * classList);
-char *getFuncListNodeForClass(struct Func *funcList, char *className, struct Var **funcsLeft);
+char *getFuncListNodeForClass(struct Func *funcList, char *className);
 
 extern struct Func * createFuncList(char * type, char * name);
 extern struct Func * addFuncToList(struct Func * funcList, char *type, char * name);
@@ -76,6 +76,7 @@ extern int checkIfVarExists(struct Var * varList, char *name);
 extern void displayVarList(struct Var * varList);
 extern void destroyVarList(struct Var * varList);
 struct Var *cloneVarList(struct Var* varList);
+struct Var* reverseVarList(struct Var* root);
 
 int parseFile(FILE * file);
 char ** createArray(int tokens);

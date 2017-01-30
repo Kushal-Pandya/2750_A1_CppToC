@@ -428,7 +428,6 @@ int printToOutFile(List *globalList, struct Class *classList, struct Func *funcL
 	char *item = malloc(sizeof(char)*TOKEN_LIMIT);
 	
 	int macrosDone = 0;
-	int globalVarsDone = 0;
 
 	displayListReverse(globalList);
 	printf("\n");
@@ -457,8 +456,7 @@ int printToOutFile(List *globalList, struct Class *classList, struct Func *funcL
 		if(strstr(item, "class ")) {
 			int j;
 			for (j=getClassListSize(classList)-1; j>0; j--) {
-				/*getClassListNode(classList);*/
-				printf("%s\n", getClassListNode(classList));
+				fprintf(outFile, "%s\n", getClassListNode(classList));
 			}
 		}
 		else if (strstr(item, "fn ")) {

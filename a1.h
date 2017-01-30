@@ -55,7 +55,10 @@ extern struct Class * createClassList(char * name);
 extern struct Class * addClassToList(struct Class *classList, char * name);
 extern int checkIfClassExists(struct Class * classList, char *name);
 extern void displayClassList(struct Class * classList);
+int getClassListSize(struct Class *classList);
+char *getClassListNode(struct Class *classList);
 extern void destroyClassList(struct Class * classList);
+char *getFuncListNodeForClass(struct Func *funcList, char *className, struct Var **funcsLeft);
 
 extern struct Func * createFuncList(char * type, char * name);
 extern struct Func * addFuncToList(struct Func * funcList, char *type, char * name);
@@ -63,13 +66,16 @@ extern int checkIfFuncExists(struct Func * funcList, char *name);
 extern void displayFuncList(struct Func * funcList);
 int getFuncListSize(struct Func *funcList);
 char *getFuncListNode(struct Func *funcList);
+struct Func * getNthFuncElement(struct Func* funcList, int n);
 extern void destroyFuncList(struct Func * funcList);
+struct Func* reverseFuncList(struct Func* root);
 
 extern struct Var * createVarList(char * type, char * name, char * value);
 extern struct Var * addVarToList(struct Var * varList, char * type, char * name, char * value);
 extern int checkIfVarExists(struct Var * varList, char *name);
 extern void displayVarList(struct Var * varList);
 extern void destroyVarList(struct Var * varList);
+struct Var *cloneVarList(struct Var* varList);
 
 int parseFile(FILE * file);
 char ** createArray(int tokens);
@@ -88,7 +94,8 @@ int removeCharFromString(char * string, char c);
 struct Var* storeMultiLineVars(char **array, int arraySize, struct Var *varList, int* arrayIndex, char *type, char *name);
 struct Var* storeGlobalVariables(char ** array, int arraySize, struct Var * varList, int *arrayIndex);
 int getVarListSize(struct Var *varList);
-char *getVarListNode(struct Var *varList);
+char *getVarListNode(struct Var *varList, int getValue);
+char *getVarListNodeSeq(struct Var *varList, int getValue);
 
 int storeClassVariables(char ** array, int arraySize, struct Class * classList, int arrayIndex);
 int storeMultiLineClassVars(char **array, int arraySize, struct Func *funcList, int arrayIndex, char *type, char *name);

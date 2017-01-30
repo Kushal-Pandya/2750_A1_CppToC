@@ -56,6 +56,48 @@ int getFuncListSize(struct Func *funcList) {
     return size;
 }
 
+struct Func * getNthFuncElement(struct Func* funcList, int n) {
+    int len = 0, i;
+    struct Func* temp = funcList;
+ 
+    len = getFuncListSize(funcList);
+ 
+    if (len < n)
+      return funcList;
+ 
+    temp = funcList;
+     for (i = 1; i < len-n+1; i++)
+       temp = temp->next;
+  
+    return temp;
+}
+
+struct Func *clone(struct Func* funcList) {
+    if (funcList == NULL) return NULL;
+
+    struct Func* result = createFuncList("", "");
+    result->name = funcList->name;
+    result->type = funcList->type;
+    result->parameters = funcList->parameters;
+    result->variables = funcList->variables;
+    result->contents = funcList->contents;
+    result->next = clone(funcList->next);
+    return result;
+}
+
+struct Func* reverseFuncList(struct Func* root) {
+  struct Func* new_root = 0;
+  while (root) {
+    struct Func* next = root->next;
+    root->next = new_root;
+    new_root = root;
+    root = next;
+  }
+  return new_root;
+}
+
+
+
 char *getFuncListNode(struct Func *funcList) {
     struct Func *temp = funcList;
     struct Func *t;
@@ -75,7 +117,7 @@ char *getFuncListNode(struct Func *funcList) {
 
     int i;
     for (i=getVarListSize(t->parameters)-1; i>0; i--) { /*Appending parameters to function*/
-        tempStr = getVarListNode(t->parameters);
+        tempStr = getVarListNode(t->parameters, 0);
         if (strchr(tempStr, ';') != NULL) {
             strcat(toReturn, strtok(tempStr, ";"));
         }
@@ -95,7 +137,7 @@ char *getFuncListNode(struct Func *funcList) {
         char *checkIfClass = calloc(10, sizeof(char));
         char *copyOfTemp = calloc(10, sizeof(char));
 
-        tempStr = getVarListNode(t->variables);
+        tempStr = getVarListNode(t->variables, 0);
         strcat(tempStr, "\n");
         strcpy(copyOfTemp, tempStr);
 

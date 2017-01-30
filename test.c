@@ -1,38 +1,36 @@
 #include "a1.h"
 
+char * printNthFromLast(struct List* list, int n)
+{
+    int len = 0, i;
+    struct List* temp = list;
+    char* toReturn = calloc(10, sizeof(char));
+ 
+    len = getListSize(list);
+ 
+    if (len < n)
+      return toReturn;
+ 
+    temp = list;
+     for (i = 1; i < len-n+1; i++)
+       temp = temp->next;
+ 
+    strcpy(toReturn, temp->value);
+ 
+    return toReturn;
+}
 
 int main(void) {
 
-	struct Class * newClass = createClassList("");
-	newClass = addClassToList(newClass, "B");
+	List* tokens = createList("");
+    tokens = addValue(tokens, "World");
+    tokens = addValue(tokens, "Licka");
 
-	printf("%d\n", checkIfClassExists(newClass, "C"));
+    printf("%s\n",printNthFromLast(tokens, 3));
 
-	displayClassList(newClass);
-	
-	destroyClassList(newClass);
+    destroyList(tokens);
+    return 0;
 
-
-/*	Class * classes = malloc(sizeof(Class));
-
-	classes->name = malloc(sizeof(char)*5);
-	classes->name = "hello";
-	
-	classes->functions = malloc(sizeof(Var*)*5);
-	classes->functions[0] = malloc(sizeof(Var));
-	classes->functions[0]->contents = createList("tests");
-	classes->functions[0]->contents = addValue(classes->functions[0]->contents, "testing");
-
-	// strcpy(classes->variables[0]->type, "hellw");
-
-	printf("%s\n", classes->name);	
-
-	List * iter;
-	for (iter = classes->functions[0]->contents; iter != NULL; iter=iter->next) {
-		printf("%s\n", iter->value);
-	}
-
-	free(classes);*/
 
 }
 

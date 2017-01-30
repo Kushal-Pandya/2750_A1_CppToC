@@ -47,7 +47,20 @@ int getVarListSize(struct Var *varList) {
     return size;
 }
 
-char *getVarListNode(struct Var *varList) {
+struct Var* reverseVarList(struct Var* root) {
+  struct Var* new_root = 0;
+  while (root) {
+    struct Var* next = root->next;
+    root->next = new_root;
+    new_root = root;
+    root = next;
+  }
+  return new_root;
+}
+
+
+
+char *getVarListNode(struct Var *varList, int getValue) {
     struct Var *temp = varList;
     struct Var *t;
     char *toReturn = malloc(sizeof(char)*200);
@@ -64,6 +77,14 @@ char *getVarListNode(struct Var *varList) {
         strcat(toReturn, t->value);
         strcat(toReturn, ";");
     }
+    else if (getValue == 1) {
+        strcpy(toReturn, t->type);
+        strcat(toReturn, " ");
+        strcat(toReturn, t->name);
+        strcat(toReturn, ":");
+        strcat(toReturn, t->value);
+        strcat(toReturn, ",");
+    }
     else {
         strcpy(toReturn, t->type);
         strcat(toReturn, " ");
@@ -74,6 +95,46 @@ char *getVarListNode(struct Var *varList) {
     t->next = NULL;
     return toReturn;
 }
+
+char *getVarListNodeSeq(struct Var *varList, int getValue) {
+    char *toReturn = malloc(sizeof(char)*200);
+
+    if (strcmp(varList->type, "class") == 0) {
+        strcpy(toReturn, "struct");
+        strcat(toReturn, " ");
+        strcat(toReturn, varList->name);
+        strcat(toReturn, " ");
+        strcat(toReturn, varList->value);
+        strcat(toReturn, ";");
+    }
+    else if (getValue == 1) {
+        strcpy(toReturn, varList->type);
+        strcat(toReturn, " ");
+        strcat(toReturn, varList->name);
+        strcat(toReturn, ":");
+        strcat(toReturn, varList->value);
+        strcat(toReturn, ",");
+    }
+    else {
+        strcpy(toReturn, varList->type);
+        strcat(toReturn, " ");
+        strcat(toReturn, varList->name);
+        strcat(toReturn, ";");
+    }
+    return toReturn;
+}
+
+struct Var *cloneVarList(struct Var* varList) {
+    if (varList == NULL) return NULL;
+
+    struct Var* result = createVarList("", "", "");
+    result->name = varList->name;
+    result->type = varList->type;
+    result->value = varList->value;
+    result->next = cloneVarList(varList->next);
+    return result;
+}
+
 
 void destroyVarList(struct Var * varList) {
     if (varList->next != NULL) {

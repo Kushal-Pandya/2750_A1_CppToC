@@ -42,12 +42,138 @@ void displayClassList(struct Class * classList) {
     }
 }
 
+int getClassListSize(struct Class *classList) {
+    struct Class *temp = classList;
+    int size = 0;
+
+    while (temp != NULL) {
+        ++size;
+        temp = temp->next;
+    }
+    return size;
+}
+
 void destroyClassList(struct Class * classList) {
     if (classList->next != NULL) {
             destroyClassList(classList->next);
     }
     free(classList);
 }
+
+char *getClassListNode(struct Class *classList) {
+    struct Class *temp = classList;
+    struct Class *t;
+
+    char *toReturn = calloc(1000, sizeof(char));
+    char *tempStr = calloc(20, sizeof(char));
+    char *tempStr2 = calloc(20, sizeof(char));
+    char *tempStr3 = calloc(40, sizeof(char));
+    char *tempStr4 = calloc(40, sizeof(char));
+
+    while(temp->next != NULL) {
+        t=temp;
+        temp=temp->next;
+    }
+
+    strcpy(toReturn, "struct ");
+    strcat(toReturn, t->name);
+    strcat(toReturn, " {\n");
+
+    int i;
+    for (i=getVarListSize(t->variables)-1; i>0; i--) { /*Appending variables to function*/
+
+        char *checkIfClass = calloc(10, sizeof(char));
+        char *copyOfTemp = calloc(10, sizeof(char));
+
+        tempStr = getVarListNode(t->variables, 0);
+        strcat(tempStr, "\n");
+        strcpy(copyOfTemp, tempStr);
+
+        checkIfClass = strtok(copyOfTemp, " ");
+        if (strcmp(checkIfClass, "struct") == 0) { /*Adding constructor to class variable declarations*/
+            char *name = calloc(10, sizeof(char));
+            char *value = calloc(15, sizeof(char));
+            char *constructorName = calloc(50, sizeof(char));
+
+            name = strtok(NULL, " ");
+            value = strtok(NULL, " ");
+            if (strchr(value, ';') != NULL) {
+                strcpy(value, strtok(value, ";"));
+            }
+
+            strcat(toReturn, tempStr);
+            strcpy(constructorName, "constructor");
+            strcat(constructorName, name);
+            strcat(constructorName, "(&");
+            strcat(constructorName, value);
+            strcat(constructorName, ");\n");
+
+            strcat(toReturn, constructorName);
+        }
+        else 
+            strcat(toReturn, tempStr);
+    }
+    
+    struct Var *funcsLeft = createVarList("", "", "");
+    struct Var *funcToWrite = createVarList("", "", "");
+
+    t->functions = reverseFuncList(t->functions);
+    t->functions = t->functions->next;
+    printf("->%d\n", getFuncListSize(t->functions));
+    for (i=getFuncListSize(t->functions); i>0; i--) {
+        
+        char *theFunc = calloc(1000, sizeof(char));
+        theFunc = getFuncListNodeForClass(t->functions, t->name, &funcsLeft);
+
+        strcat(toReturn, theFunc);
+        printf("TESTTEST\n");
+        t->functions = t->functions->next;
+    }
+    /*strcat(toReturn, "}\n");
+    displayVarList(funcToWrite);*/
+
+    /*struct Var *funcsLeft = createVarList("", "", "");
+    struct Var *funcToWrite = createVarList("", "", "");
+    for (i=getFuncListSize(t->functions)-1; i>0; i--) {
+        char *theFunc = calloc(1000, sizeof(char));
+    
+        theFunc = getFuncListNodeForClass(t->functions, t->name, &funcsLeft);
+        strcat(toReturn, theFunc); 
+
+        funcToWrite = addVarToList(funcToWrite, funcsLeft->type, funcsLeft->name, funcsLeft->value);
+        /*displayVarList(funcsLeft);
+    }
+    strcat(toReturn, "}\n");
+    displayVarList(funcToWrite);
+*/
+   /* while (getVarListSize(funcToWrite) > 1) {
+
+        char * str = calloc(20, sizeof(char));
+        char * str2 = calloc(20, sizeof(char));
+        tempStr = getVarListNode(funcToWrite, 1);
+
+        printf("TEMPSTR%s\n", tempStr);
+
+        strcpy(tempStr3, tempStr);
+        strcpy(tempStr4, tempStr);
+        strcpy(str, strtok(tempStr3, ":"));
+        strcat(toReturn, strtok(str, " ")); 
+        strcat(toReturn, " "); 
+
+        strcat(toReturn, strtok(NULL, ":")); 
+        
+        strcpy(str2, strtok(tempStr4, ":"));
+        strcat(toReturn, strtok(NULL, ";")); 
+        strcat(toReturn, "("); 
+    }
+
+    strcat(toReturn, ") {\n");*/
+
+    free(t->next);
+    t->next = NULL;
+    return toReturn;
+}
+
 
 int storeClassVariables(char ** array, int arraySize, struct Class * classList, int arrayIndex) {
 
@@ -106,6 +232,159 @@ int storeClassVariables(char ** array, int arraySize, struct Class * classList, 
         i = i + 2;
         return i;
     }
+    else if (compareTypes(array[i])) {
+        if (strchr(array[i+2], ';') != NULL) {
+            char * name = calloc(20, sizeof(char));
+            char * value = calloc(20, sizeof(char));
+
+            strcpy(name, array[i+1]);
+            removeCharFromString(name, '\n');
+            strcpy(value, strtok(array[i+2], ";")); 
+            classList->variables = addVarToList(classList->variables, type, name, value);
+            i = i + 2;
+            return i;
+        }
+    }
 
     return i;
+}
+
+char *getFuncListNodeForClass(struct Func *funcList, char *className, struct Var **funcsLeft) {
+    struct Func *temp = funcList;
+    struct Func *t;
+
+    int paramsCompleted = 0;
+    
+    char *toReturn = malloc(sizeof(char)*1000);
+    char *tempStr = calloc(20, sizeof(char));
+    char *tempStr2 = calloc(20, sizeof(char));
+    char *tempStr3 = calloc(40, sizeof(char));
+    char *tempStr4 = calloc(40, sizeof(char));
+
+    while(temp->next != NULL) {
+        t=temp;
+        temp=temp->next;
+    }
+
+    strcpy(toReturn, t->type); /*Appending type and name to function*/
+    strcat(toReturn, " (*");    
+    strcat(toReturn, className);
+    strcat(toReturn, t->name);
+
+    strcpy(tempStr3, className);
+    strcat(tempStr3, t->name);    
+
+    struct Var *newVars = createVarList("", "", "");
+    int otherSize;
+
+    t->parameters = reverseVarList(t->parameters);
+    t->parameters = t->parameters->next;
+    int i;
+
+    if (getVarListSize(t->parameters) == 0) {
+        newVars = addVarToList(newVars, t->type, tempStr3, "");
+    }
+    else {
+        printf("%d\n", getVarListSize(t->parameters));
+        for (i=getVarListSize(t->parameters); i>0; i--) { 
+            tempStr = getVarListNodeSeq(t->parameters, 0);
+            printf("TEMPSTR%s\n", tempStr);
+    /*        char param = tempStr[0];
+
+            sprintf(tempStr2, "%s%c", toReturn, param);
+            strcpy(toReturn, tempStr2);
+
+            sprintf(tempStr4, "%s%c", tempStr3, param);
+            strcpy(tempStr3, tempStr4);
+
+            newVars = addVarToList(newVars, t->type, tempStr3, tempStr);
+            otherSize = getVarListSize(t->parameters);*/
+
+            t->parameters = t->parameters->next;
+        }
+    }
+
+    
+    
+/*    strcat(toReturn, ")();\n"); 
+    *funcsLeft = cloneVarList(newVars);*/
+
+
+
+/*    printf("->%s\n\n", toReturn);
+*/
+
+
+/*    strcat(toReturn, newVars->value);
+    strcat(toReturn, ",");
+*/
+
+
+/*
+    for (i=getVarListSize(funcParams->parameters)-1; i>0; i--) { /*Appending parameters to function
+        printf("TESTSTS%d\n", funcParams->parameters);
+        tempStr = getVarListNode(funcParams->parameters);
+        if (strchr(tempStr, ';') != NULL) {
+            strcat(toReturn, strtok(tempStr, ";"));
+        }
+        else {
+            strcat(toReturn, tempStr);   
+        }
+
+        if (getVarListSize(funcParams->parameters) > 1) 
+            strcat(toReturn, ",");
+    }
+*/
+
+
+/*
+
+    strcat(toReturn, ")");
+    strcat(toReturn, " {\n");
+
+    for (i=getVarListSize(t->variables)-1; i>0; i--) { /*Appending variables to function
+
+        char *checkIfClass = calloc(10, sizeof(char));
+        char *copyOfTemp = calloc(10, sizeof(char));
+        
+        tempStr = getVarListNode(t->variables);
+        strcat(tempStr, "\n");
+        strcpy(copyOfTemp, tempStr);
+
+        checkIfClass = strtok(copyOfTemp, " ");
+        if (strcmp(checkIfClass, "struct") == 0) { /*Adding constructor to class variable declarations
+            char *name = calloc(10, sizeof(char));
+            char *value = calloc(15, sizeof(char));
+            char *constructorName = calloc(50, sizeof(char));
+
+            name = strtok(NULL, " ");
+            value = strtok(NULL, " ");
+            if (strchr(value, ';') != NULL) {
+                strcpy(value, strtok(value, ";"));
+            }
+
+            strcat(toReturn, tempStr);
+            strcpy(constructorName, "constructor");
+            strcat(constructorName, name);
+            strcat(constructorName, "(&");
+            strcat(constructorName, value);
+            strcat(constructorName, ");\n");
+
+            strcat(toReturn, constructorName);
+        }
+        else 
+            strcat(toReturn, tempStr);
+    }
+
+    for (i=getListSize(t->contents)-1; i>0; i--) { /*Appending contents to function
+        tempStr = getListNode(t->contents);
+
+        if (strchr(tempStr, ';')) {
+            strcat(tempStr, "\n");
+        }
+        strcat(toReturn, tempStr);
+    }
+    strcat(toReturn, "}\n");*/
+    
+    return toReturn;
 }

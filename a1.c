@@ -407,13 +407,13 @@ int readArray(char ** array, int size, char *fileName) {
 		}
 	}
 
-	displayClassList(classList);
+/*	displayClassList(classList);
 	printf("---------------------------------\n");
 	displayList(globalList);
 	printf("---------------------------------\n");
 	displayVarList(varList);
 	printf("---------------------------------\n");
-	displayFuncList(funcList);
+	displayFuncList(funcList);*/
 
 	printToOutFile(globalList, classList, funcList, varList, fileName);
 
@@ -449,19 +449,24 @@ int printToOutFile(List *globalList, struct Class *classList, struct Func *funcL
 			int j;
 			fprintf(outFile, "\n");
 			for (j=getVarListSize(varList)-1; j>0; j--) {
-				fprintf(outFile, "%s\n", getVarListNode(varList));
+				fprintf(outFile, "%s\n", getVarListNode(varList, 0));
 			}
 		}
 
-		if (strstr(item, "fn ")) {
+		
+		if(strstr(item, "class ")) {
+			int j;
+			for (j=getClassListSize(classList)-1; j>0; j--) {
+				/*getClassListNode(classList);*/
+				printf("%s\n", getClassListNode(classList));
+			}
+		}
+		else if (strstr(item, "fn ")) {
 			int j;
 			fprintf(outFile, "\n");
 			for (j=getFuncListSize(funcList)-1; j>0; j--) {
 				fprintf(outFile, "%s\n", getFuncListNode(funcList));
 			}
-		}
-		else if(strstr(item, "class ")) {
-
 		}
 	}
 	

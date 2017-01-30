@@ -21,17 +21,20 @@ class A {
 		/*This is also a comment*/
 		return (1+1);
 	}
-	int subtract(int d, double e) {
+	double subtract(int d) {
 		int c;
-		float one= e;
-		e = 5;
+		float one;
 		return (d-e);
+	}
+	void set() {
+		return(a);
 	}
 };
 
 class B {
 	int a;
-	int add(int b, int c) {
+	class A myA;
+	int add(int b) {
 		return (b+c);
 	}
 };

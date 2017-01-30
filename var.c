@@ -239,5 +239,6 @@ struct Var* storeGlobalVariables(char ** array, int arraySize, struct Var *varLi
         return varList;
     }
 
+    free(type);
     return varList;
 }

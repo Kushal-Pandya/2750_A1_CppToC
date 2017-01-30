@@ -406,7 +406,8 @@ int readArray(char ** array, int size, char *fileName) {
 			inFunc = 0;
 		}
 	}
-
+	
+	
 /*	displayClassList(classList);
 	printf("---------------------------------\n");
 	displayList(globalList);
@@ -470,6 +471,16 @@ int printToOutFile(List *globalList, struct Class *classList, struct Func *funcL
 	
 /*	printf("1%s\n", getListNode(globalList));
 	printf("2%s\n", getListNode(globalList));*/
+
+	fclose(outFile);
+
+	free(item);
+	free(fileName);
+
+	destroyList(globalList);
+	destroyClassList(classList);
+	destroyFuncList(funcList);
+	destroyVarList(varList);
 
 	return 0;
 }

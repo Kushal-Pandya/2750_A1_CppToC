@@ -125,7 +125,7 @@ char *getClassListNode(struct Class *classList) {
         strcat(toReturn, theFunc);
         t->functions = t->functions->next;
     }
-    strcat(toReturn, "}\n");
+    strcat(toReturn, "};\n");
 
     t->functions = funcListHead;
     t->functions = reverseFuncList(t->functions);

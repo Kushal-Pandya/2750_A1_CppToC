@@ -250,8 +250,7 @@ int storeClassVariables(char ** array, int arraySize, struct Class * classList, 
 }
 
 char *getFuncListNodeForClass(struct Func *funcList, char *className, struct Var **funcsLeft) {
-    struct Func *temp = funcList;
-    struct Func *t;
+    struct Func *t = funcList;
 
     int paramsCompleted = 0;
     
@@ -260,11 +259,6 @@ char *getFuncListNodeForClass(struct Func *funcList, char *className, struct Var
     char *tempStr2 = calloc(20, sizeof(char));
     char *tempStr3 = calloc(40, sizeof(char));
     char *tempStr4 = calloc(40, sizeof(char));
-
-    while(temp->next != NULL) {
-        t=temp;
-        temp=temp->next;
-    }
 
     strcpy(toReturn, t->type); /*Appending type and name to function*/
     strcat(toReturn, " (*");    
